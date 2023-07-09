@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+
+{% block title %}{{ web.name }}{% endblock title %}
+
+{% block head %}
+{{ super() }}
+<link href="/static/css/viewer.min.css" rel="stylesheet"/>
+<script src="/static/js/viewer.min.js"></script>
+<style>
+    .post-cover{
+        width: 100%;
+        height: 332px;
+        background-image: url({{ post.cover | safe}});
+        background-size: cover;
+        background-position: center;
+    }
+</style>
+{% endblock head %}
+
+{% block nav %}
+{% include "component/nav.html" %}
+{% endblock nav %}
+
+{% block main %}
+
+    <div class="post-cover d-flex justify-content-center align-items-center">
+        <p style="font-size:24px;color:white;">{{ post.title }}</p>
+    </div>
+    <div style="font-size:18px;background:white;padding:15px;">
+        哈哈哈哈
+    </div>
+{% endblock main %}
+
+
+{% block script %}
+<script type="text/javascript">
+    function look(elem) {
+        const viewer = new Viewer(document.getElementById(elem.id), {
+            inline: false,
+            toolbar: false,
+            navbar: false,
+            hide: function () {
+                viewer.destroy();
+            }
+        });
+        viewer.show();
+    }
+
+</script>
+
+{% endblock script %}

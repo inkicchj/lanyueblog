@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>{% block title %}{% endblock title %}</title>
+    {% block head %}
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link href="/static/css/pico.min.css" rel="stylesheet" />
+    <script src="/static/js/axios.min.js"></script>
+    <link rel="stylesheet" href="/static/css/message.min.css">
+    <script src="/static/js/message.min.js"></script>
+    <link rel="stylesheet" href="/static/css/bootstrap-icons.min.css">
+    {% endblock head %}
+
+    <style>
+        body {
+            font-family: "宋体";
+        }
+    </style>
+</head>
+
+<body>
+    <!-- 导航栏 -->
+    {% block nav %}
+    {% endblock nav %}
+    <!-- 内容-->
+
+    {% block main %}
+    {% endblock %}
+
+    <!-- 页脚 -->
+    {% block footer %}
+    {% endblock footer %}
+</body>
+<!-- js脚本 -->
+{% block script %}
+{% endblock script %}
+</html>

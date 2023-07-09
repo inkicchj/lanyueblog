@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+
+{% block title %}{{ web.name }}{% endblock title %}
+
+{% block head %}
+{{ super() }}
+{% endblock head %}
+
+
+{% block main %}
+<div class="card" style="margin-top: 150px;">
+    <div class="card-content">
+        <div class="content">
+            <h3 style="margin-bottom: 30px;">登录</h3>
+            <h4>邮箱</h4>
+            <input class="input" type="text" placeholder="example@xxx.com" id="email">
+            <h4 style="margin-top: 20px;">密码</h4>
+            <input class="input" type="password" placeholder="6-18位" id="password">
+            <button class="button is-primary" style="margin-top: 30px;" onclick="login()">登录</button>
+        </div>
+    </div>
+</div>
+{% endblock main %}
+
+{% block footer %}
+{% endblock footer %}
+
+{% block script %}
+<script type="text/javascript">
+    function login() {
+        let email = document.getElementById("email").value;
+        let password = document.getElementById("password").value;
+        axios({
+            method: 'post',
+            url: '/user/login',
+            data: {
+                email: email,
+                password: password
+            }
+        }).then(res => {
+
+            if (res.data.code == 410) {
+                Qmsg.warning(res.data.msg, {
+                    timeout: 3000
+                });
+            }
+            if (res.data.code == 200 ) {
+                window.location.replace("/");
+            }
+        });
+    }
+</script>
+{% endblock script %}

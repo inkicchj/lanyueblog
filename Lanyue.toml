@@ -1,0 +1,13 @@
+[database]
+uri = "sqlite://lanyue.db"
+
+[website]
+name = "揽月小屋"
+icon = "/static/img/logo.ico"
+background = "/static/img/15.jpg"
+copyright = "Power by lanyue"
+beian = "13123444"
+
+[service]
+host = "0.0.0.0:8002"
+secret_key = "NTNNIKf2H%Hbp3r1q2F2TidIv3OHHB4UfsaRIBhxGT@hp@jkwa1magYPmUiYXj$D"

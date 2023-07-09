@@ -1,0 +1,100 @@
+<script id="tpl-user-list" type="text/html">
+    {% raw %}
+    {{each data as user key}}
+    <tr class="thbody">
+        <th>
+            <figure class="image is-48x48">
+                <img class="is-rounded"
+                    src="{{ if user.avatar }}{{ user.avatar }}{{else}}/static/img/14.jpeg{{/if}}"
+                    style="width: 48px;height: 48px;object-fit: cover;" id="img{{ user.id }}"
+                    onclick="look(this)">
+            </figure>
+        </th>
+        <td><a href="/user/info/{{ user.id }}">{{ user.username }}</a></td>
+        <td>{{ user.email }}</td>
+        <td>{{ user.created | moment }}</td>
+        <td>{{ user.logined | moment }}</td>
+        <td>
+            <div class="control has-icons-left">
+                <div class="select is-small">
+                    <select id="role-select" onchange="roleSelect(event, '{{user.id }}')">
+                        <option value="superadmin" {{ if user.role == 'superadmin' }}selected{{/if}}>超级管理员</option>
+                      <option value="admin" {{ if user.role == 'dmin' }}selected{{/if}}>管理员</option>
+                      <option value="general" {{ if user.role == 'general' }}selected{{/if}}>普通用户</option>
+                    </select>
+                  </div>
+                  <span class="icon is-left">
+                    <i class="fas fa-user-shield"></i>
+                  </span>
+            </div>
+
+            </td>
+        <td>
+            <div class="control has-icons-left">
+                <div class="select is-small">
+                    <select id="role-select" onchange="statusSelect(event, '{{ user.id }}')">
+                        <option value="1" {{ if user.status == 1 }}selected{{/if}}>活动</option>
+                        <option value="2" {{ if user.status == 2 }}selected{{/if}}>限制</option>
+                        <option value="0" {{ if user.status == 0 }}selected{{/if}}>封禁</option>
+                    </select>
+                  </div>
+                  <span class="icon is-left">
+                    <i class="fas fa-info-circle"></i>
+                  </span>
+            </div>
+        </td>
+        <td>
+            <a class="button is-small is-warning" href="/manage/user/edit_info?id={{ user.id }}">编辑</a>
+            <button class="button is-small is-danger">删除</button>
+        </td>
+    </tr>
+    {{/each}}
+    {% endraw %}
+</script>
+<script type="text/javascript">
+   function roleSelect(e, id) {
+    console.log(e.target.value);
+    axios({
+            method: 'post',
+            url: `/user/manage/change_role?id=${id}`,
+            data: {
+                content: e.target.value,
+            }
+        }).then( res => {
+            console.log(res)
+            if (res.data.code == 200) {
+                Qmsg.success(res.data.msg, {
+                    timeout: 3000
+                });
+            }
+            if (res.data.code == 410) {
+                Qmsg.warning(res.data.msg, {
+                    timeout: 3000
+                });
+            }
+        })
+
+   }
+   function statusSelect(e, id) {
+    axios({
+            method: 'post',
+            url: `/user/manage/change_status?id=${id}`,
+            data: {
+                content: parseInt(e.target.value),
+            }
+        }).then( res => {
+            console.log(res)
+            if (res.data.code == 200) {
+                Qmsg.success(res.data.msg, {
+                    timeout: 3000
+                });
+            }
+            if (res.data.code == 410) {
+                Qmsg.warning(res.data.msg, {
+                    timeout: 3000
+                });
+            }
+        })
+
+   }
+</script>

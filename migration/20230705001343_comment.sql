@@ -1,0 +1,20 @@
+CREATE TABLE IF NOT EXISTS comment(
+        id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL UNIQUE, 
+        email VARCHAR(64) NOT NULL,
+        username VARCHAR(32) NOT NULL,
+        link VARCHAR(256), 
+        content TEXT,
+        created INT(10),
+        status INT(1),
+        ip VARCHAR(32),
+        agent VARCHAR(256),
+        user_id INT,
+        to_user_id INT,
+        owner_id INT,
+        post_id INT,
+        parent_id INT,
+        CONSTRAINT fk_user_id FOREIGN KEY (user_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT fk_to_user_id FOREIGN KEY (to_user_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT fk_owner_id FOREIGN KEY (owner_id) REFERENCES user(id) ON DELETE CASCADE ON UPDATE CASCADE,
+        CONSTRAINT fk_post_id FOREIGN KEY (post_id) REFERENCES post(id) ON DELETE SET NULL ON UPDATE CASCADE
+    );

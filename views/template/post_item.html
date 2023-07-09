@@ -1,0 +1,37 @@
+<script id="tpl-post-list" type="text/html">
+  {% raw %}
+  {{each data as post key}}
+  <li class="list-group-item">
+    <div style="height:200px;padding:15px;">
+      <div class="d-flex justify-content-space-between">
+        <div>
+          <div style="height:35px;">
+            <a class="fs-5 fs-5 fw-semibold title" href="/post/{{ post.id }}">{{ post.title }}</a>
+          </div>
+          <div style="height:100px;">
+            <p class="fs-6 fst-normal lh-base" style="color:#7a8b9a;">{{ post.summay }}</p>
+          </div>
+          <div class="hstack gap-3" style="height:35px;">
+            <img src="{{ post.avatar }}" style="height:30px;width:30px;border-radius:30px;" class="object-fit-cover" alt="{{ post.username }}">
+            <span style="font-size:14px;">
+            <a href="/user/info/{{ post.user_id }}" class="link-dark">{{ post.username }}</a>
+          </span>
+            <span style="font-size:14px;">
+            <i class="bi bi-clock-history"></i>
+            <span>{{ post.modified }}</span>
+          </span>
+            <span style="font-size:14px;">
+            <i class="bi bi-eye"></i>
+            <span>{{ post.view_num }}</span>
+          </span>
+          </div>
+        </div>
+        <div style="width:170px;height:170px;">
+          <img src="{{ post.cover }}" style="height: 170px;width:170px;" class="object-fit-cover rounded" alt="{{ post.title }}">
+        </div>
+      </div>
+    </div>
+  </li>
+  {{/each}}
+  {% endraw %}
+</script>

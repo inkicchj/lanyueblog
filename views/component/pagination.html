@@ -1,0 +1,57 @@
+{% macro page(total, size, url, pref) %}
+{% set pagenum = total/size + 1 | int %}
+{% set cur = have_page(url=url) %}
+<nav aria-label="Page navigation example" style="margin-top:30px;">
+    <ul class="pagination justify-content-center">
+        {% if cur != 1 %}
+        <li class="page-item">
+            <a class="page-link" href="{{ pref }}/?page={{ cur-1 }}">&laquo;</a>
+        </li>
+        {% endif %}
+        {% for i in range(start=1, end=pagenum+1) %}
+        {% if cur == i %}
+        {% if pagenum <= 5 %}
+        {% for prev in range(start=1, end=cur) %}
+        <li class="page-item"><a class="page-link" href="{{ pref }}/?page={{ prev }}">{{ prev }}</a></li>
+        {% endfor %}
+        <li class="page-item active" aria-current="page"><a class="page-link">{{ cur }}</a></li>
+        {% for next in range(start=cur+1, end=pagenum+1) %}
+        <li class="page-item"><a class="page-link" href="{{ pref }}/?page={{ next }}">{{ next }}</a></li>
+        {% endfor %}
+        {% else %}
+        {% if cur < 4 %}
+        {% for prev in range(start=1, end=cur) %}
+        <li class="page-item"><a class="page-link" href="{{ pref }}/?page={{ prev }}">{{ prev }}</a></li>
+        {% endfor %}
+        <li class="page-item active" aria-current="page"><a class="page-link">{{ cur }}</a></li>
+        {% for next in range(start=cur+1, end=6) %}
+        <li class="page-item"><a class="page-link" href="{{ pref }}/?page={{ next }}">{{ next }}</a></li>
+        {% endfor %}
+        {% elif cur > pagenum - 3  %}
+        {% for prev in range(start=pagenum-4, end=cur) %}
+        <li class="page-item"><a class="page-link" href="{{ pref }}/?page={{ prev }}">{{ prev }}</a></li>
+        {% endfor %}
+        <li class="page-item active" aria-current="page"><a class="page-link">{{ cur }}</a></li>
+        {% for next in range(start=cur+1, end=pagenum+1) %}
+        <li class="page-item"><a class="page-link" href="{{ pref }}/?page={{ next }}">{{ next }}</a></li>
+        {% endfor %}
+        {% else %}
+        {% for prev in range(start=cur-2, end=cur) %}
+        <li class="page-item"><a class="page-link" href="{{ pref }}/?page={{ prev }}">{{ prev }}</a></li>
+        {% endfor %}
+        <li class="page-item active" aria-current="page"><a class="page-link">{{ cur }}</a></li>
+        {% for next in range(start=cur+1, end=cur+3) %}
+        <li class="page-item"><a class="page-link" href="{{ pref }}/?page={{ next }}">{{ next }}</a></li>
+        {% endfor %}
+        {% endif %}
+        {% endif %}
+        {% endif %}
+        {% endfor %}
+        {% if cur != pagenum %}
+        <li class="page-item">
+            <a class="page-link" href="{{ pref }}/?page={{ cur+1 }}">&raquo;</a>
+        </li>
+        {% endif %}
+    </ul>
+</nav>
+{% endmacro page %}
