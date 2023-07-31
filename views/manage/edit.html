@@ -1,0 +1,486 @@
+{% extends "base_manage.html" %}
+
+{% block head %}
+{{ super() }}
+<!--vditor-->
+<link rel="stylesheet" href="/assets/css/vditor.css" />
+<script src="/assets/js/vditor.js"></script>
+<script src="/assets/js/md5.min.js"></script>
+<link rel="stylesheet" href="/assets/css/upload.css" />
+<style>
+
+</style>
+
+{% endblock head %}
+
+{% block sidebar %}
+{% include "component_manage/sidebar.html" %}
+{% endblock sidebar %}
+
+{% block main %}
+<div class="mdui-col-md-8">
+
+
+    <div id="vditor" style="margin-bottom: 20px;"></div>
+
+    <div style="margin-bottom: 20px;">
+        <span>附件</span>
+        <div class="mdui-textfield">
+            <input type="file" id="upload-file" multiple class="filepond" name="file"
+                   data-max-file-size="{{ file.max_size }}" data-max-parallel="{{ file.parallel }}" data-max-files="{{ file.max_files }}">
+        </div>
+    </div>
+
+</div>
+<div class="mdui-col-md-4">
+    <div style="margin-bottom: 20px;">
+        <span>封面</span>
+        <div class="mdui-textfield">
+            <textarea class="mdui-textfield-input" maxlength="200" name="article-cover"></textarea>
+        </div>
+    </div>
+    <div style="margin-bottom: 20px">
+        <input type="file" id="upload-cover" multiple name="file"
+               data-max-file-size="{{ file.max_size }}M" data-max-files="1">
+    </div>
+    <div style="margin-bottom: 20px;">
+        <span>标题</span>
+        <div class="mdui-textfield">
+            <input class="mdui-textfield-input" type="text" name="article-title" maxlength="50"/>
+        </div>
+    </div>
+    <div style="margin-bottom: 20px;">
+        <span>别名</span>
+        <div class="mdui-textfield">
+            <input class="mdui-textfield-input" type="text" name="article-alias" maxlength="50"/>
+        </div>
+    </div>
+    <div style="margin-bottom: 20px;">
+        <span>描述</span>
+        <div class="mdui-textfield">
+            <textarea class="mdui-textfield-input" maxlength="200" name="article-desc"></textarea>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 20px;">
+        <span>类型</span>
+        <form>
+            <label class="mdui-radio mdui-m-r-2">
+                <input type="radio" checked name="article-type" value="Blog" />
+                <i class="mdui-radio-icon"></i>
+                文章
+            </label>
+
+            <label class="mdui-radio mdui-m-r-2">
+                <input type="radio" name="article-type" value="Page"/>
+                <i class="mdui-radio-icon"></i>
+                页面
+            </label>
+
+            <label class="mdui-radio mdui-m-r-2">
+                <input type="radio" name="article-type" value="Book"/>
+                <i class="mdui-radio-icon"></i>
+                书录
+            </label>
+
+            <label class="mdui-radio mdui-m-r-2">
+                <input type="radio" name="article-type" value="Activity"/>
+                <i class="mdui-radio-icon"></i>
+                动态
+            </label>
+
+            <label class="mdui-radio mdui-m-r-2">
+                <input type="radio" name="article-type" value="Link"/>
+                <i class="mdui-radio-icon"></i>
+                链接
+            </label>
+
+        </form>
+    </div>
+    <div style="margin-bottom: 20px;" id="category-bar">
+        <span>分类</span>
+        <select class="mdui-select" style="width: 100%;" id="category">
+
+        </select>
+    </div>
+    <div style="margin-bottom: 20px;">
+        <span>允许评论</span>
+        <form>
+            <label class="mdui-radio mdui-m-r-2">
+                <input type="radio" name="allow-comment" checked value="1"/>
+                <i class="mdui-radio-icon"></i>
+                是
+            </label>
+
+            <label class="mdui-radio mdui-m-r-2">
+                <input type="radio" name="allow-comment" value="0"/>
+                <i class="mdui-radio-icon"></i>
+                否
+            </label>
+
+        </form>
+    </div>
+
+
+    <div style="margin-bottom: 20px;">
+        <span>文章状态</span>
+        <form>
+
+            <label class="mdui-radio mdui-m-r-2">
+                {% if user %}
+                {% if user.permission == "Admin" %}
+                <input type="radio" name="article-status" checked value="Publish"/>
+                {% else %}
+                <input type="radio" name="article-status" checked value="Review"/>
+                {% endif %}
+                {% endif %}
+                <i class="mdui-radio-icon"></i>
+                发布
+            </label>
+
+            <label class="mdui-radio mdui-m-r-2">
+                <input type="radio" name="article-status" value="Draft"/>
+                <i class="mdui-radio-icon"></i>
+                草稿
+            </label>
+
+        </form>
+    </div>
+
+
+
+
+    <div class="mdui-clearfix" style="margin-bottom: 20px;">
+        <div class="mdui-float-right" >
+            <button class="mdui-btn mdui-ripple mdui-color-indigo-100" id="article-save">保存</button>
+        </div>
+    </div>
+</div>
+{% endblock main %}
+
+{% block code %}
+<script type="text/javascript" src="/assets/js/upload.js"></script>
+<script type="text/javascript">
+
+    // 初始化编辑器
+    let vditor = new Vditor('vditor', {
+        "height": 500,
+        "cache": {
+            "enable": true
+        },
+        "preview": {
+            "hljs": {
+                "lineNumber": true
+            }
+        },
+        "value": "",
+        "mode": "ir",
+        "tab": "\t",
+        "counter": {
+            "enable": true
+        },
+        toolbar: [
+            'headings', 'italic', 'br', 'bold', 'strike', '|',
+            'line', 'emoji', 'quote', 'list', 'ordered-list', 'check', 'code', 'inline-code', '|',
+            'undo', 'redo', '|',
+            'link', 'table', 'upload', '|',
+            'export', 'preview',
+        ]
+    });
+
+    //获取分类
+    function getCategory(category_id) {
+        axios({
+            url: "/category/list_with_all",
+            method: "post"
+        }).then(res => {
+            if (res.data.code === 200) {
+                let html = "";
+                for (let cate of res.data.data) {
+                    console.log(cate);
+                    let select;
+                    if (category_id === cate.id) {
+                        select = `<option value="${cate.id}" selected>${cate.name}(${cate.type})</option>`;
+                    } else {
+                        select = `<option value="${cate.id}">${cate.name}(${cate.type})</option>`;
+                    }
+                    html += select;
+
+                }
+                document.getElementById("category").innerHTML = html;
+            }
+        })
+    }
+
+
+
+    function getQueryVariable(variable) {
+        var query = window.location.search.substring(1);
+        var vars = query.split("&");
+        for (var i=0;i<vars.length;i++) {
+            var pair = vars[i].split("=");
+            if(pair[0] === variable){return pair[1];}
+        }
+        return false
+    }
+
+
+    // 根据路径查询参数判断下一步动作
+    let upload_url;
+    window.addEventListener("load", function (e) {
+
+        if (getQueryVariable("aid")) {
+            upload_url = `/file/upload?aid=${getQueryVariable("aid")}`;
+
+            // 获取文章
+            axios({
+                url: `/article/detail/${parseInt(getQueryVariable("aid"))}`,
+                method: "post",
+            }).then(res => {
+                if (res.data.code === 200) {
+                    let article = res.data.data;
+                    console.log(article);
+                    document.getElementsByName("article-cover")[0].value = article.cover;
+                    document.getElementsByName("article-title")[0].value = article.title;
+                    document.getElementsByName("article-alias")[0].value = article.alias;
+                    document.getElementsByName("article-desc")[0].value = article.description;
+
+                    // 获取分类
+                    getCategory(article.category_id);
+                    let types = document.getElementsByName("article-type");
+                    for (let i = 0; i < types.length; i++) {
+                        if (types[i].value === article.type) {
+                            types[i].checked = true;
+                        }
+                    }
+                    let allow_comment = document.getElementsByName("allow-comment");
+                    for (let i = 0; i < allow_comment.length; i++) {
+                        if (parseInt(allow_comment[i].value) === article.allow_comment) {
+                            allow_comment[i].checked = true;
+                        }
+                    }
+                    let status = document.getElementsByName("article-status");
+                    for (let i = 0; i < status.length; i++) {
+                        console.log(status[i]);
+                        if (status[i].value === article.status) {
+                            status[i].checked = true;
+                        }
+                    }
+                    if (article.type === "Page") {
+                        document.getElementById("category-bar").style.display = "none";
+                    }
+                    vditor.setValue(article.content);
+                    document.getElementById("article-save").addEventListener("click", (e)=>{
+                        saveArticle(article.id);
+                    })
+                }
+            })
+
+
+
+        } else {
+            upload_url = "/file/upload";
+            // 获取分类
+            getCategory(0);
+
+            document.getElementById("article-save").addEventListener("click", (e)=>{
+                saveArticle(0);
+            })
+        }
+
+        // 当附件上传后文章还未保存时，存储的已上传附件
+        let uploaded = [];
+        // 上传附件
+        let upload = new FileUpload("upload-file", {
+            upload: {
+                url: upload_url,
+                method: "post"
+            },
+            onSuccess: (file) => {
+                uploaded.push(file);
+            },
+            onClick: (file) => {
+                console.log(file);
+                if (file.serverRes.thumbnail) {
+                    let image = `![${file.fileName}](/${file.serverRes.thumbnail})`;
+                    vditor.insertValue(image);
+                } else {
+                    let link = `[${file.fileName}](/${file.serverRes.preview})`;
+                    vditor.insertValue(link);
+                }
+            },
+            onRemove: (file) => {
+                console.log("删除", file.serverRes.id);
+                axios({
+                    url: `/file/delete/${file.serverRes.id}`,
+                    method: "post"
+                }).then(res => {
+                    if (res.data.code === 200) {
+                        for (let i=0;i<uploaded.length;i++) {
+                            if (uploaded[i].fileId === file.fileId) {
+                                uploaded.splice(i, 1);
+                            }
+                        }
+                        let val = vditor.getValue();
+                        let regex;
+                        if (file.serverRes.thumbnail) {
+                            regex = `(([!])\\[.*\\]\\(/${file.serverRes.thumbnail}\\))`;
+                        } else {
+                            regex = `(\\[.*\\]\\(/${file.serverRes.preview}\\))`;
+                        }
+                        let result = val.match(regex);
+                        if (result) {
+                            let res = val.replace(result[0], "");
+                            vditor.setValue(res);
+                        }
+                    }
+                    if (res.data.code === 410) {
+                        Qmsg.error(`删除附件${file.serverRes.name}失败`)
+                    }
+                })
+            }
+        });
+        upload.start();
+
+        // 上传头像
+        let upload_cover = new FileUpload("upload-cover", {
+            label:"<span>上传封面</span>",
+            upload: {
+                url: upload_url,
+                method: "post"
+            },
+            onSuccess: (file) => {
+                uploaded.push(file);
+            },
+            onClick: (file) => {
+                if (file.fileType.includes("image")) {
+                    document.getElementsByName("article-cover")[0].value = `/${file.serverRes.thumbnail}`;
+                }
+            },
+            onRemove: (file) => {
+                for (let i=0;i<uploaded.length;i++) {
+                    if (uploaded[i].fileId === file.fileId) {
+                        uploaded.splice(i, 1);
+                    }
+                }
+            }
+        });
+        upload_cover.start();
+
+        axios({
+            url: `/file/list`,
+            method: "post",
+            data:{
+                article_id: parseInt(getQueryVariable("aid"))
+            }
+        }).then(res => {
+            if (res.data.code === 200) {
+                let fileList = res.data.data;
+                upload.addResFiles(fileList);
+            }
+        })
+
+        // 当选择文章类型为Page时隐藏
+        let aTypes = document.querySelectorAll("input[type=radio][name=article-type]");
+        for (let i=0;i<aTypes.length;i++) {
+            aTypes[i].addEventListener("change", function (e) {
+                console.log("radio", e.target.value);
+                if (e.target.value === 'Page') {
+                    console.log("隐藏分类")
+                    document.getElementById("category-bar").style.display = "none";
+
+                } else {
+                    document.getElementById("category-bar").style.display = "block";
+                }
+            })
+        }
+
+        // 保存文章
+        function saveArticle(id) {
+            let param = {
+                cover: null,
+                title: null,
+                alias: null,
+                description: null,
+                content: null,
+                type: null,
+                status: null,
+                category_id: null,
+                allow_comment: null
+            }
+            param.cover = document.getElementsByName("article-cover")[0].value;
+            param.title = document.getElementsByName("article-title")[0].value;
+            if (document.getElementsByName("article-alias")[0].value!==''){
+                param.alias = document.getElementsByName("article-alias")[0].value;
+            }
+            param.description = document.getElementsByName("article-desc")[0].value;
+            param.content = vditor.getValue();
+
+            let types = document.getElementsByName("article-type");
+            for (let i = 0; i < types.length; i++) {
+                if (types[i].checked) {
+                    param.type = types[i].value;
+                }
+            }
+            let allow_comment = document.getElementsByName("allow-comment");
+            for (let i = 0; i < allow_comment.length; i++) {
+                if (allow_comment[i].checked) {
+                    param.allow_comment = parseInt(allow_comment[i].value);
+                }
+            }
+            if (param.type !== 'Page') {
+                let category = document.getElementById("category");
+                let index = category.selectedIndex;
+                param.category_id = parseInt(category[index].value);
+            }
+
+            let status = document.getElementsByName("article-status");
+            for (let i = 0; i < status.length; i++) {
+                if (status[i].checked) {
+                    param.status = status[i].value;
+                }
+            }
+            axios({
+                url: id===0?"/article/create":`/article/update/${id}`,
+                method: "post",
+                data: param
+            }).then(res => {
+                if (res.data.code === 200) {
+
+                    axios.all(uploaded.map((file) => {
+                        if (!file.serverRes.article_id && file.status === upload.SUCCESS) {
+                            axios({
+                                url: `/file/update_with_article/${file.serverRes.id}`,
+                                method: "post",
+                                data: {
+                                    aid: res.data.data
+                                }
+                            }).then(res1 => {
+                                return res1
+                            })
+                        }
+                    })).then(axios.spread((acc, perm)=>{
+                        if (param.status === "Publish") {
+                            Qmsg.success("文章已发布");
+                        } else if (param.status === "Review") {
+                            Qmsg.info("文章已发布，等待审核中");
+                        } else if(param.status === "Draft") {
+                            Qmsg.info("文章已保存为草稿");
+                        }
+                        vditor.clearCache();
+                        // location.replace("/manage/article");
+                    }))
+
+                }
+                if (res.data.code === 410) {
+                    Qmsg.warning(res.data.msg);
+                }
+            })
+        }
+
+    })
+
+
+
+</script>
+{% endblock code %}

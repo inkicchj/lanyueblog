@@ -1,0 +1,85 @@
+{% extends "base_manage.html" %}
+
+{% block head %}
+{{ super() }}
+<style>
+    .nums {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        border-radius: 15px;
+    }
+    .num {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+    .infos {
+        border-radius: 15px;
+    }
+    .info-bar {
+        border-radius: 5px;
+    }
+</style>
+{% endblock head %}
+
+{% block sidebar %}
+{% include "component_manage/sidebar.html" %}
+{% endblock sidebar %}
+
+{% block main %}
+<div class="mdui-container mdui-m-b-5">
+    <div>
+        <span class="mdui-typo-caption">数据每24小时更新一次</span>
+    </div>
+    <div class="mdui-row-xs-2 mdui-m-t-2">
+        <div class="mdui-col">
+            <div class="nums mdui-p-a-2 mdui-color-theme-50">
+                <div class="num">
+                    <div>
+                        <span class="mdui-typo-title">总浏览量</span>
+                    </div>
+                    <div class="mdui-m-t-2">
+                        <span class="mdui-typo-display-1">{{ nums[0] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="mdui-col">
+            <div class="likes nums mdui-p-a-2 mdui-color-theme-50">
+                <div class="num">
+                    <div>
+                        <span class="mdui-typo-title">总点赞量</span>
+                    </div>
+                    <div class="mdui-m-t-2">
+                        <span class="mdui-typo-display-1">{{ nums[1] }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="mdui-row mdui-m-t-2">
+
+        <div class="mdui-col-md-12">
+            <div class="infos mdui-p-a-2 mdui-color-theme-50">
+                <div class="mdui-m-b-3">
+                    <span class="mdui-typo-title">任务操作信息</span>
+                </div>
+                {% if nums_info %}
+                {% for n in nums_info.messages | reverse | slice(start=0, end=50) %}
+                <div class="info-bar mdui-p-a-1" style="display: flex;flex-wrap: wrap;">
+                    <div class="mdui-p-a-1 mdui-color-green-200" style="border-radius: 5px;">
+                        <span class="mdui-typo-caption" style="font-weight: bold">{{ n[0] }}</span>
+                    </div>
+                    <div class="mdui-p-a-1 mdui-color-theme-200" style="border-radius: 5px;">
+                        <span>{{ n[1] }}</span>
+                    </div>
+                </div>
+                {% endfor %}
+                {% endif %}
+            </div>
+        </div>
+
+    </div>
+</div>
+{% endblock main %}

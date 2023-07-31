@@ -1,0 +1,10 @@
+{% macro init(pagination) %}
+    {% set pages = pagination.total_page %}
+    {% set cur = pagination.page %}
+    {% set page_list = pagination(pages=pages, cur=cur) %}
+    {% if page_list | length != 1 %}
+    {% for item in pagination(pages=pages, cur=cur) %}
+        {{ item | safe }}
+    {% endfor %}
+    {% endif %}
+{% endmacro init %}

@@ -1,0 +1,37 @@
+{% raw %}
+<script id="tp-article-item" type="text/html">
+    {{each data.data article key}}
+    <tr>
+        <td>
+            <label class="mdui-checkbox">
+                <input type="checkbox" name="article-id" value="{{ article.id }}" onchange="selectId(event)" />
+                <i class="mdui-checkbox-icon"></i>
+            </label>
+        </td>
+        <td>
+
+            <a {{if article.type != "Link"}}href="/detail/{{ article.alias?article.alias:article.id }}"{{else}}href="{{ article.alias }}"{{/if}} target="_blank">
+                {{article.title?article.title:article.description}}
+            </a>
+        </td>
+        <td>
+            <a href="javascript:;">{{ article.type }}</a>
+        </td>
+        <td>
+            <a href="javascript:;">{{ article.category_name }}</a>
+        </td>
+        <td>{{ moment(article.created) }}</td>
+        <td>{{ moment(article.updated) }}</td>
+        <td>
+            <a href="/author/{{ article.user_id }}">{{ article.user_nickname }}</a>
+        </td>
+        <td>
+            <div class="mdui-btn-group">
+                <a href="/manage/edit?aid={{ article.id }}" style="color: grey;">编辑</a>
+
+            </div>
+        </td>
+    </tr>
+    {{/each}}
+</script>
+{% endraw %}

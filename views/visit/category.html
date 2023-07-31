@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% import "component_visit/blog_item.html" as blog %}
+
+{% block title %}分类-{{web.name}}{% endblock title %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/assets/css/hover-min.css">
+{% endblock head %}
+
+{% block nav %}
+{% include "component_visit/nav.html" %}
+{% endblock nav %}
+
+{% block main %}
+<!-- 正文内容 -->
+<div style="height: 100px;"></div>
+<div class="mdui-container">
+    <div class="mdui-row-lg-5 mdui-row-md-4 mdui-row-xl-3 mdui-row-sm-2 mdui-row-xs-1">
+        {% for cate in categories %}
+        <div class="mdui-col mdui-m-b-3">
+            <div style="
+                padding: 1px;
+                height: 220px;
+                width: 100%;
+                display: flex;
+                border-radius: 15px;
+                position: relative;
+                justify-content: center;
+                overflow: hidden;
+                align-items: center;">
+                <img class="hvr-grow" src="/{{cate.cover}}"
+                     style="position: absolute;top: 0;left: 0;height: 100%;width: 100%;object-fit: cover;"
+                >
+                <a href="/category/{% if cate.alias %}{{cate.alias}}{% else %}{{cate.id}}{% endif %}" class="mdui-typo-title mdui-text-color-white" style="text-shadow:0px 1px 2px black;text-decoration: none;z-index: 2;">{{cate.name}}({% if cate.count %}{{cate.count}}{% else %}0{% endif %})</a>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+
+<!-- 正文内容结束 -->
+{% endblock main %}

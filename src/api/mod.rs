@@ -1,21 +1,22 @@
-pub mod  utils;
 pub mod user;
-pub mod post;
+pub mod article;
+pub mod file;
+pub mod category;
+pub mod comment;
+
 use serde::Serialize;
 use salvo::prelude::{Json, Response};
-use salvo::Result;
-use std::sync::Arc;
 
 #[derive(Serialize, Clone)]
-pub struct Resp<T> 
-where T: Serialize
+pub struct Resp<T>
+    where T: Serialize
 {
     code: i16,
     msg: Option<String>,
     data: Option<T>,
 }
 
-impl<T: Serialize> Resp<T>  {
+impl<T: Serialize> Resp<T> {
     pub fn ok(data: T) -> Self {
         Resp { code: 200, msg: None, data: Some(data) }
     }
@@ -23,7 +24,6 @@ impl<T: Serialize> Resp<T>  {
     pub fn json_resp(self, res: &mut Response) {
         res.render(Json(self))
     }
-
 }
 
 impl Resp<()> {

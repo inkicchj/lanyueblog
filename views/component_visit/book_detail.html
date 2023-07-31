@@ -1,0 +1,67 @@
+{% macro init(article) %}
+<div class="mdui-container-fluid mdui-p-a-2 mdui-color-theme-100 mdui-row"
+     style="border-radius: 6px;">
+    <div class="mdui-col-md-3 mdui-col-sm-3">
+        <img src="{{ article.cover }}"
+             style="object-fit: cover;width: 100%;"/>
+    </div>
+
+    <div class="mdui-col-md-9 mdui-col-sm-9">
+        <div>
+            <div class="mdui-p-a-1">
+                    <span class="mdui-typo-title mdui-text-color-theme-text"
+                          data-article="{{article.id}}"
+                          id="article-title">{{ article.title }}</span>
+            </div>
+            <div class="mdui-p-a-1">
+                <span class="mdui-typo-body-2-opacity"><span style="font-weight: bold">作者:</span> {{ book_info(data=article.description) | first }}</span>
+            </div>
+            <div class="mdui-p-a-1">
+                <span class="mdui-typo-body-2-opacity"><span style="font-weight: bold">简介:</span> {{ book_info(data=article.description) | last }}</span>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="mdui-container-fluid " style="margin-top: 30px;">
+    <div style="display: flex;justify-content: start;flex-wrap: wrap;">
+        <a class="mdui-chip mdui-color-theme-100 mdui-m-r-1" href="/author/{{ article.user_id }}">
+            <img class="mdui-chip-icon"
+                 src="/{{ article.user_avatar | default(value=" assets/images/user.png") | safe }}"
+            style="object-fit: cover;"/>
+            <span class="mdui-chip-title" id="owner-nickname" data-owner="{{article.user_id}}">{{ article.user_nickname }}</span>
+        </a>
+        {% if article.category_id %}
+        <a class="mdui-chip mdui-color-theme-100 mdui-m-r-1"
+           href="/category/{{ article.category_alias | default(value=article.category_id) }}">
+                            <span class="mdui-chip-icon mdui-color-theme-200">
+                                <i class="mdui-icon material-icons">folder_open</i>
+                            </span>
+            <span class="mdui-chip-title">{{ article.category_name }}</span>
+        </a>
+        {% endif %}
+        <a class="mdui-chip mdui-color-theme-100 mdui-m-r-1">
+                            <span class="mdui-chip-icon mdui-color-theme-200">
+                                <i class="mdui-icon material-icons">access_time</i>
+                            </span>
+            <span class="mdui-chip-title">{{ moment(time=article.updated) }}</span>
+        </a>
+    </div>
+</div>
+
+<div class="mdui-container-fluid markdown-body  mdui-color-theme-50" id="article-content" style="margin-top: 30px;">
+    {% if article.content %}
+    {% for item in book_content(data=article.content) %}
+    <div style="display: flex;align-items: center">
+        <div class="mdui-color-theme-200" style="width: 12px;height: 3px;">
+        </div>
+        <div class="mdui-text-color-theme-200" style="padding: 5px;border-radius: 15px;">
+            {{ item | first }}
+        </div>
+        <div class="mdui-color-theme-200" style="width: 12px;height: 3px;">
+        </div>
+    </div>
+    {{ item | last | safe }}
+    {% endfor %}
+    {% endif %}
+</div>
+{% endmacro init %}

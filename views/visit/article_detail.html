@@ -1,0 +1,513 @@
+{% extends "base.html" %}
+{% import "component_visit/book_detail.html" as book %}
+{% import "component_visit/blog_detail.html" as blog %}
+{% import "component_visit/activity_detail.html" as activity %}
+{% block title %}
+{% if article.type != "Activity" %}
+{{ article.title }}
+{% else %}
+{{ article.description | truncate(length=20) }}
+{% endif %}
+-{{web.name}}
+
+{% endblock title %}
+
+{% block head %}
+{{ super() }}
+<script type="text/javascript" src="/assets/js/arttemplate.js"></script>
+<script type="text/javascript" src="/assets/js/moment-with-locales.js"></script>
+<link rel="stylesheet" href="/assets/css/github-markdown.css">
+
+{% if article.type == "Activity" %}
+<link  href="/assets/preview/photoviewer.min.css" rel="stylesheet">
+<script src="/assets/preview/photoviewer.min.js"></script>
+{% endif %}
+
+<style>
+    .reply-btn:hover {
+        cursor: pointer;
+        color: green;
+    }
+</style>
+{% endblock head %}
+
+{% block nav %}
+{% include "component_visit/nav.html" %}
+{% endblock nav %}
+
+{% block main %}
+<!-- 正文内容 -->
+<div style="height: 100px;"></div>
+<div class="mdui-container">
+    <div class="mdui-row">
+        <div class="mdui-col-lg-8 mdui-col-offset-lg-2 mdui-p-a-1">
+
+            {% if article.type == "Book" %}
+                {{ book::init(article=article) }}
+            {% elif article.type == "Blog" or article.type == "Page" %}
+                {{ blog::init(article=article) }}
+            {% elif article.type == "Activity" %}
+                {{ activity::init(article=article) }}
+            {% endif %}
+
+            <!-- 评论 -->
+            {% if article.allow_comment %}
+            <div class="mdui-container-fluid" style="margin-bottom: 100px;">
+                <div class="mdui-container-fluid">
+                    <p class="mdui-typo-title">评论 {{ article.comments }}</p>
+                </div>
+                <div class="mdui-container-fluid">
+
+                    <div class="mdui-textfield">
+                            <textarea class="mdui-textfield-input" rows="4" placeholder="发布一条友善的评论*"
+                                      id="push-content"
+                                      maxlength="200"></textarea>
+                    </div>
+                    {% if not user %}
+                    <div id="push-info">
+                        <div class="mdui-textfield">
+                            <input class="mdui-textfield-input" type="text" maxlength="20" placeholder="昵称*"
+                                   id="push-nickname"/>
+                        </div>
+                        <div class="mdui-textfield">
+                            <input class="mdui-textfield-input" type="email" placeholder="邮箱*" id="push-email"/>
+                        </div>
+                        <div class="mdui-textfield">
+                            <input class="mdui-textfield-input" type="text" placeholder="个人主页" id="push-link"/>
+                        </div>
+                    </div>
+
+                    {% else %}
+                    <div class="mdui-chip">
+                        <img class="mdui-chip-icon" style="object-fit: cover;" src="/{{ user.avatar | default(value="assets/images/user.png") | safe }}?date={{ now() }}"/>
+                        <span class="mdui-chip-title">{{user.nickname}}</span>
+                    </div>
+                    {% endif %}
+                    <div class="mdui-clearfix">
+                        <div class="mdui-float-left">
+                            <!-- <label class="mdui-checkbox">
+                                <input type="checkbox" />
+                                <i class="mdui-checkbox-icon"></i>
+                                私密评论
+                            </label> -->
+                        </div>
+                        <div class="mdui-float-right">
+                            <button class="mdui-btn mdui-ripple mdui-color-theme-200"
+                                    onclick="ReplyTo(null, null, null)">提交评论
+                            </button>
+                        </div>
+                    </div>
+
+
+                </div>
+                <div class="mdui-container-fluid" style="margin-top: 42px;" id="comments">
+                    {% if comments.data %}
+                        {% for comment in comments.data | reverse %}
+                            {% if not comment.parent_id %}
+                    <div style="display: flex;flex-wrap: nowrap;margin-bottom: 20px;" id="comment-{{comment.id}}">
+                        <div>
+                            <div style="display: flex;justify-content: center;">
+                                {% if comment.avatar %}
+                                <img class="mdui-img-circle"
+                                     src="/{{comment.avatar}}"
+                                     style="object-fit: cover;width: 50px;height: 50px;"/>
+                                {% else %}
+                                <span class="mdui-chip-icon mdui-color-theme-100" style="width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
+                                    {{ comment.nickname |  truncate(length=1, end="") }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div style="width: 100%;margin-left: 10px;">
+                            <div class="nickname">
+                                <span class="mdui-typo-body-2" style="font-weight: bold;">{{comment.nickname}}</span>
+                                <span class="mdui-typo-body-2">
+                                    {% if comment.from_user_id %}
+                                        {% if comment.from_user_id == article.user_id %}
+                                            [作者]
+                                        {% endif %}
+                                    {% endif %}
+                                </span>
+                            </div>
+                            <div class="mdui-m-t-2">
+                                    <span class="mdui-typo-body-1 mdui-p-a-1 mdui-color-theme-100"
+                                          style="border-radius: 5px;">{{ comment.content }}</span>
+                            </div>
+                            <div class="mdui-m-t-2" style="margin-bottom: 20px;">
+                                <span class="mdui-typo-caption mdui-text-color-grey-600">{{ moment(time=comment.created) }}</span>
+                                <span class="mdui-typo-caption reply-btn" onclick="ReplyTo({{comment.id}},{{comment.id}},{% if comment.from_user_id %}{{comment.from_user_id}}{% else %}null{% endif %})">回复</span>
+                            </div>
+                            <div id="replies-{{ comment.id }}">
+
+                            {% for reply in comments.data %}
+                            {% if reply.parent_id == comment.id %}
+                            <div style="display: flex;flex-wrap: nowrap;margin-bottom: 20px;" id="comment-{{reply.id}}">
+                                <div>
+                                    <div style="display: flex;justify-content: center;">
+                                        {% if reply.avatar %}
+                                        <img class="mdui-img-circle"
+                                             src="/{{reply.avatar}}"
+                                             style="object-fit: cover;width: 50px;height: 50px;"/>
+                                        {% else %}
+                                        <span class="mdui-chip-icon mdui-color-theme-100" style="width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
+                                    {{ reply.nickname |  truncate(length=1, end="") }}</span>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                <div style="width: 100%;margin-left: 10px;">
+                                    <div class="nickname">
+                                        <span class="mdui-typo-body-2" style="font-weight: bold;">{{reply.nickname}}</span>
+                                        <span class="mdui-typo-body-2">
+                                    {% if reply.from_user_id %}
+                                        {% if reply.from_user_id == article.user_id %}
+                                            [作者]
+                                        {% endif %}
+                                    {% endif %}
+                                </span>
+                                    </div>
+                                    <div class="mdui-m-t-2">
+                                    <span class="mdui-typo-body-1 mdui-p-a-1 mdui-color-theme-100"
+                                          style="border-radius: 5px;">
+                                        @
+                                        <span class="mdui-typo-body-1-opacity" style="font-size: 13px;">
+                                            {% for to_rep in comments.data %}
+                                            {% if reply.reply_id == to_rep.id %}
+                                                {{ to_rep.nickname }}
+                                            {% endif %}
+                                            {% endfor %}
+                                            {% if reply.to_user_id %}
+                                            {% if reply.to_user_id == article.user_id %}
+                                                [作者]
+                                            {% endif %}
+                                            {% endif %}
+
+                                        </span>
+                                        <span style="margin-left: 7px;">
+                                            {{ reply.content }}
+                                        </span>
+
+                                        </span>
+                                    </div>
+
+                                    <div class="mdui-m-t-2">
+                                        <span class="mdui-typo-caption mdui-text-color-grey-600">{{ moment(time=reply.created) }}</span>
+                                        <span class="mdui-typo-caption reply-btn" onclick="ReplyTo({{comment.id}},{{reply.id}},{% if reply.from_user_id %}{{reply.from_user_id}}{% else %}null{% endif %})">回复</span>
+                                    </div>
+
+                                </div>
+                            </div>
+                            {% endif %}
+                            {% endfor %}
+                                </div>
+                        </div>
+                    </div>
+                            {% endif %}
+                        {% endfor %}
+                    {% endif %}
+
+
+                </div>
+            </div>
+            {% endif %}
+            <!-- 评论结束 -->
+
+            <!-- 回复窗口 -->
+            <div class="mdui-dialog" id="reply-to">
+                <div class="mdui-dialog-title" id="reply-title"></div>
+                <div class="mdui-dialog-content">
+                    <div class="mdui-textfield">
+                            <textarea class="mdui-textfield-input" rows="4" placeholder="发布一条友善的评论*"
+                                      id="reply-content"
+                                      maxlength="200"></textarea>
+                    </div>
+                    {% if not user %}
+                    <div id="reply-info">
+                        <div class="mdui-textfield">
+                            <input class="mdui-textfield-input" type="text" maxlength="20" placeholder="昵称*"
+                                   id="reply-nickname"/>
+                        </div>
+                        <div class="mdui-textfield">
+                            <input class="mdui-textfield-input" type="email" placeholder="邮箱*" id="reply-email"/>
+                        </div>
+                        <div class="mdui-textfield">
+                            <input class="mdui-textfield-input" type="text" placeholder="个人主页" id="reply-link"/>
+                        </div>
+                    </div>
+                    {% else %}
+                    <div class="mdui-chip">
+                        <img class="mdui-chip-icon" style="object-fit: cover" src="/{{ user.avatar | default(value="assets/images/user.png") | safe }}?date={{ now() }}"/>
+                        <span class="mdui-chip-title">{{user.nickname}}</span>
+                    </div>
+                    {% endif %}
+                    <div class="mdui-clearfix">
+                        <div class="mdui-float-left">
+                            <!-- <label class="mdui-checkbox">
+                                <input type="checkbox" />
+                                <i class="mdui-checkbox-icon"></i>
+                                私密评论
+                            </label> -->
+                        </div>
+                        <div class="mdui-float-right">
+                            <button class="mdui-btn mdui-ripple" onclick="ReplyClose()">取消</button>
+                            <button class="mdui-btn mdui-ripple mdui-color-indigo-50" id="reply-confirm">提交评论
+                            </button>
+                        </div>
+                    </div>
+
+
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- 正文内容结束 -->
+{% endblock main %}
+
+{% block code %}
+{% include "templates/tp_article_comment_item.html" %}
+<script type="text/javascript">
+    let param = {
+        nickname: null,
+        email: null,
+        link: null,
+        content: null,
+        to_user_id: null,
+        owner_id: null,
+        article_id: null,
+        parent_id: null,
+        reply_id: null,
+    }
+
+    let visitor = {
+        nickname: null,
+        email: null,
+        link: null
+    }
+
+    let visitor_strorage = localStorage.getItem("visitor");
+    if (visitor_strorage) {
+        let v = JSON.parse(visitor_strorage);
+        visitor.nickname = v.nickname;
+        visitor.email = v.email;
+        visitor.link = v.link;
+        if (document.getElementById("reply-info")) {
+            document.getElementById("reply-nickname").value = visitor.nickname;
+            document.getElementById("reply-email").value = visitor.email;
+            document.getElementById("reply-link").value = visitor.link!==''?visitor.link:null;
+        }
+        if (document.getElementById("push-info")) {
+            document.getElementById("push-nickname").value = visitor.nickname;
+            document.getElementById("push-email").value = visitor.email;
+            document.getElementById("push-link").value = visitor.link!==''?visitor.link:null;
+        }
+    }
+
+
+    var $ = mdui.$;
+    var inst = new mdui.Dialog('#reply-to');
+
+    function reply() {
+        if (document.getElementById("reply-info")) {
+            param.nickname = document.getElementById("reply-nickname").value;
+            param.email = document.getElementById("reply-email").value;
+            param.link = document.getElementById("reply-link").value!==''?document.getElementById("reply-link").value:null;
+            visitor.nickname = param.nickname;
+            visitor.email = param.email;
+            visitor.link = param.link;
+            localStorage.setItem("visitor", JSON.stringify(visitor));
+        }
+        param.content = document.getElementById("reply-content").value;
+        pushComment();
+    }
+
+    function ReplyTo(parent_id, reply_id, to_user_id) {
+        param.owner_id = parseInt(document.getElementById("owner-nickname").dataset.owner);
+        param.article_id = parseInt(document.getElementById("article-title").dataset.article);
+        if (parent_id && reply_id) {
+            let reply_nickname = document.querySelector(`#comment-${reply_id} .nickname span`).innerText;
+            $("#reply-title")[0].innerText = `回复: ${reply_nickname}`;
+            inst.open();
+
+            if (to_user_id) {param.to_user_id = to_user_id}
+            param.parent_id = parent_id;
+            param.reply_id = reply_id;
+            document.getElementById("reply-confirm").addEventListener("click", reply)
+
+        } else {
+            if (document.getElementById("push-info")) {
+                param.nickname = document.getElementById("push-nickname").value;
+                param.email = document.getElementById("push-email").value;
+                param.link = document.getElementById("push-link").value!==''?document.getElementById("push-link").value:null;
+                visitor.nickname = param.nickname;
+                visitor.email = param.email;
+                visitor.link = param.link;
+                localStorage.setItem("visitor", JSON.stringify(visitor));
+            }
+            param.content = document.getElementById("push-content").value;
+            pushComment();
+        }
+
+    }
+
+    function ReplyClose() {
+        inst.close();
+    }
+
+    function pushComment(){
+        axios({
+            url: "/comment/create",
+            method: "post",
+            data: param
+        }).then(res => {
+            if(res.data.code === 200) {
+                Qmsg.success("评论已发布");
+                let data = res.data.data;
+                template.defaults.imports.moment = function (timestamp) {
+                    moment.locale("zh-cn");
+                    return moment.unix(timestamp).fromNow();
+                }
+                if (data.parent_id && data.reply_id) {
+                    let inner = document.getElementById(`replies-${data.parent_id}`);
+                    inner.insertAdjacentHTML('beforeend', template("tp-article-comment-item", res.data));
+                } else {
+                    document.getElementById("comments").insertAdjacentHTML('afterbegin', template("tp-article-comment-item", res.data));
+                }
+            } else {
+                Qmsg.warning(res.data.msg);
+            }
+            document.getElementById("reply-confirm").removeEventListener("click", reply)
+            param.content = null;
+            param.to_user_id = null;
+            param.owner_id = null;
+            param.article_id = null;
+            param.parent_id = null;
+            param.reply_id = null;
+            inst.close();
+        })
+    }
+
+    function waterFall() {
+        let screen = document.getElementById("article-content").clientWidth;
+
+
+        let main = document.getElementById("image-main");
+        if (main) {
+            main.style.position = "relative";
+
+            let items = document.getElementsByClassName("image-bar");
+            let column = 2;
+
+
+            for (let item of items) {
+                item.style.float = "left";
+                item.style.padding = "5px";
+                item.style.width = `${Math.floor(screen/column)-18}px`;
+            }
+
+            let heights = [];
+            let minHeight = 0;
+            let minIndex = 0;
+            for (let i=0;i<column;i++) {
+                items[i].style.position = "absolute";
+                heights.push(items[i].offsetHeight);
+                items[i].style.left = `${i*items[i].offsetWidth}px`;
+
+            }
+
+            for (let i=column;i<items.length;i++) {
+                items[i].style.position = "absolute";
+                for (let j=0;j<heights.length;j++) {
+                    if (heights[minIndex]>heights[j]) {
+                        minIndex = j;
+                    }
+                }
+                minHeight = heights[minIndex];
+                items[i].style.left = `${minIndex*items[i].offsetWidth}px`;
+
+                items[i].style.top = `${minHeight}px`;
+                heights[minIndex] += items[i].offsetHeight;
+                console.log(heights);
+            }
+
+            let maxHeight = 0;
+            for (let i of heights) {
+                if (maxHeight < i) {
+                    maxHeight = i;
+                }
+            }
+
+            main.style.height = `${maxHeight}px`;
+        }
+
+    }
+
+    function onViewer(index) {
+        let images = document.querySelectorAll("#image-main img");
+        let items = [];
+        for (let img of images) {
+            items.push({
+                src: img.dataset.preview,
+            })
+        }
+        new PhotoViewer(items, {
+            index: index,
+            initMaximized: true,
+            callbacks: {
+                opened: function(context){
+                    let main = document.getElementsByClassName("photoviewer-modal")[0];
+                    main.style.background = "rgba(0,0,0,.9)";
+                    main.style.color = "white";
+                    let stage = document.getElementsByClassName("photoviewer-stage")[0];
+                    stage.style.background = "rgba(0,0,0,.9)";
+
+                },
+            }
+        });
+    }
+
+    window.onload = () => {
+        waterFall();
+    }
+
+    window.onresize = () => {
+        waterFall();
+    }
+
+    if (localStorage.getItem("article_{{article.id}}")) {
+        document.getElementById("like-btn").classList.remove("mdui-color-theme-100");
+        document.getElementById("like-btn").classList.add("mdui-color-theme-300");
+    }
+
+    function onLike(id) {
+        let is_like = localStorage.getItem(`article_${id}`);
+        if (is_like) {
+            localStorage.removeItem(`article_${id}`)
+            axios({
+                url: `/article/num/${id}/unlike`,
+                method: "post"
+            }).then(res => {
+                if (res.data.code === 200) {
+                    document.getElementById("like-num").innerText = res.data.data.likes;
+                    document.getElementById("like-btn").classList.add("mdui-color-theme-100");
+                    document.getElementById("like-btn").classList.remove("mdui-color-theme-300");
+                }
+            })
+        } else {
+            localStorage.setItem(`article_${id}`, "true");
+            axios({
+                url: `/article/num/${id}/like`,
+                method: "post"
+            }).then(res => {
+                if (res.data.code === 200) {
+                    document.getElementById("like-num").innerText = res.data.data.likes;
+                    document.getElementById("like-btn").classList.remove("mdui-color-theme-100");
+                    document.getElementById("like-btn").classList.add("mdui-color-theme-300");
+                }
+            })
+        }
+    }
+
+
+</script>
+{% endblock code %}

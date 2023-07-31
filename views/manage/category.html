@@ -1,0 +1,323 @@
+{% extends "base_manage.html" %}
+
+{% block head %}
+{{ super() }}
+<script src="/assets/js/md5.min.js"></script>
+<link rel="stylesheet" href="/assets/css/upload.css" />
+{% endblock head %}
+
+{% block sidebar %}
+{% include "component_manage/sidebar.html" %}
+{% endblock sidebar %}
+
+{% block main %}
+<div class="mdui-container" style="margin-top: 50px;">
+<!--    删除对话框-->
+    <div class="mdui-dialog" id="cate-del">
+        <div class="mdui-dialog-title" id="cate-del-title">删除分类</div>
+        <div class="mdui-dialog-content" id="cate-del-content">
+        </div>
+        <div class="mdui-dialog-actions">
+            <button class="mdui-btn mdui-ripple" id="cate-del-cancel">取消</button>
+            <button class="mdui-btn mdui-ripple" id="cate-del-confirm">确定</button>
+        </div>
+    </div>
+    <!-- 编辑窗口 -->
+    <div class="mdui-dialog" id="edit-to">
+        <div class="mdui-dialog-title" id="reply-nickname"></div>
+        <div class="mdui-dialog-content">
+
+            <div class="mdui-textfield">
+                <span>背景</span>
+                <input type="file" id="upload-cover" name="image"
+                       data-max-file-size="{{ file.max_size }}" data-max-parallel="{{ file.parallel }}" data-max-files="1">
+            </div>
+
+            <div class="mdui-textfield">
+                <span>名称</span>
+                <input class="mdui-textfield-input" name="cate-name" type="text" maxlength="20"/>
+            </div>
+            <div class="mdui-textfield">
+                <span>别名</span>
+                <input class="mdui-textfield-input" name="cate-alias" type="text" maxlength="50"/>
+            </div>
+            <div class="mdui-textfield">
+                <span>描述</span>
+                <textarea class="mdui-textfield-input" name="cate-desc" maxlength="200"></textarea>
+            </div>
+            <div class="mdui-textfield">
+                <span>排序</span>
+                <input class="mdui-textfield-input" name="cate-sort" type="number" value="0">
+            </div>
+            <div class="mdui-textfield">
+                <span>类型</span>
+                <form>
+
+                    <label class="mdui-radio" style="margin-right: 20px;">
+                        <input type="radio" name="cate-type" checked value="Category" />
+                        <i class="mdui-radio-icon"></i>
+                        Category
+                    </label>
+                    <label class="mdui-radio">
+                        <input type="radio" name="cate-type" value="Header" />
+                        <i class="mdui-radio-icon"></i>
+                        Header
+                    </label>
+                </form>
+            </div>
+            <div class="mdui-clearfix">
+                <div class="mdui-float-right">
+                    <button class="mdui-btn mdui-ripple" onclick="EditClose()">取消</button>
+                    <button class="mdui-btn mdui-ripple mdui-color-indigo-50" id="cate-save">保存</button>
+                </div>
+            </div>
+        </div>
+    </div>
+<!--    编辑窗口结束-->
+    <div class="mdui-row">
+        <div style="margin-bottom: 20px;">
+            <div class="mdui-clearfix">
+                <div class="mdui-float-right">
+                    <button class="mdui-btn mdui-ripple mdui-color-indigo-100" onclick="EditTo(0)">
+                        新建
+                    </button>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    <div class="mdui-table-fluid" style="margin-bottom: 20px;">
+        <table class="mdui-table">
+            <thead>
+            <tr>
+                <th>背景图片</th>
+                <th>名称</th>
+                <th>别名</th>
+                <th>描述</th>
+                <th>类型</th>
+                <th>排序</th>
+                <th>内容数量</th>
+                <th>操作</th>
+            </tr>
+            </thead>
+            <tbody class="table-body">
+            {% if categories %}
+            {% for cate in categories %}
+            <tr id="meta-1">
+                <td>
+                    <img src="/{{cate.cover}}" style="width: 100px;height: 76px;object-fit: cover;">
+                </td>
+                <td style="width: 100px;">
+                    <a href="../category_list.html" id="mata-name-1">{{cate.name}}</a>
+                </td>
+                <td>
+                    {{cate.alias}}
+                </td>
+                <td id="meta-description-1">
+                    {{cate.description}}
+                </td>
+                <td id="meta-type-1">{{cate.type}}</td>
+                <td class="mdui-table-col-numeric">{{cate.sort}}</td>
+                <td class="mdui-table-col-numeric">{{cate.count}}</td>
+                <td style="width: 120px;">
+                    <div class="mdui-btn-group">
+                        <!-- <button type="button" class="mdui-btn">
+                                <a>预览</a>
+                            </button> -->
+
+                        <a href="javascript:;" style="color: grey;" onclick="EditTo({{cate.id}})">编辑</a>
+                        <a href="javascript:;" style="color: red;" onclick="DeleteTo({{cate.id}}, '{{cate.name}}')">删除</a>
+                        {% if cate.status != "Default" %}
+                        <div>
+                            <a href="javascript:;" style="color: grey;" onclick="setDefault({{cate.id}})">设为默认</a>
+                        </div>
+
+                        {% endif %}
+
+
+
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+            {% endif %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+{% endblock main %}
+
+{% block code %}
+<script type="text/javascript" src="/assets/js/upload.js"></script>
+<script type="text/javascript">
+
+    let upload = new FileUpload("upload-cover", {
+        upload: {
+            url: `/category/update_cover`,
+            method: "post"
+        }
+    })
+    upload.start();
+
+    let param = {
+        name: null,
+        alias: null,
+        description: null,
+        type: null,
+        sort: null,
+    };
+
+    let name = document.getElementsByName("cate-name")[0];
+    let alias = document.getElementsByName("cate-alias")[0];
+    let desc = document.getElementsByName("cate-desc")[0];
+    let sort = document.getElementsByName("cate-sort")[0];
+    let types = document.getElementsByName("cate-type");
+
+    var $ = mdui.$;
+    var inst = new mdui.Dialog('#edit-to');
+    var is_del = new mdui.Dialog('#cate-del')
+    function DeleteTo(id, name) {
+        is_del.open();
+
+        document.getElementById("cate-del-content").innerText = `你确定要删除 ${name} 吗？`;
+        document.getElementById("cate-del-confirm").addEventListener("click", function (e){
+            deleteCate(id);
+        });
+        document.getElementById("cate-del-cancel").addEventListener("click", function (e){
+            cancelDeleteTo();
+        })
+
+    }
+
+    function cancelDeleteTo(){
+        is_del.close();
+    }
+
+    function EditTo(id) {
+        if (id !== 0) {
+            upload.upload.url = `/category/update_cover/${id}`;
+            upload.visible();
+            axios({
+                url: `/category/detail/${id}`,
+                method: "post"
+            }).then(res => {
+                if (res.data.code === 200) {
+                    let data = res.data.data;
+                    name.value = data.name;
+                    alias.value = data.alias;
+                    desc.value = data.description;
+                    sort.value = data.sort;
+                    for (let t of types) {
+                        if (t.value === data.type) {
+                            t.checked = true;
+                        }
+                    }
+                }
+                if (res.data.code === 410) {
+                    Qmsg.error(res.data.msg);
+                }
+            })
+            document.getElementById("cate-save").addEventListener("click", function (e){
+                EditSave(id);
+            })
+        } else {
+            upload.hidden();
+            document.getElementById("cate-save").addEventListener("click", function (e){
+                EditSave(0);
+            })
+        }
+
+        inst.open();
+
+    }
+    function EditClose() {
+        inst.close();
+        name.value = '';
+        alias.value = '';
+        desc.value = '';
+        sort.value = 0;
+        for (let t of types) {
+            if (t.value === "Category") {
+                t.checked = true;
+            }
+        }
+
+    }
+    function EditSave(id) {
+        let url;
+        if (id === 0) {
+            url = "/category/create";
+        } else if (id>0) {
+            url = `/category/update/${id}`;
+        }
+        param.name = name.value;
+        param.alias = alias.value;
+        param.description = desc.value;
+        param.sort = parseInt(sort.value);
+        for (let t of types) {
+            if (t.checked) {
+                param.type = t.value;
+            }
+        }
+        axios({
+            url: url,
+            method: "post",
+            data: param
+        }).then(res=>{
+            if (res.data.code === 200) {
+                inst.close();
+                name.value = '';
+                alias.value = '';
+                desc.value = '';
+                sort.value = 0;
+                for (let t of types) {
+                    if (t.value === "Category") {
+                        t.checked = true;
+                    }
+                }
+                Qmsg.success(`保存分类${param.name}成功`);
+            }
+            if (res.data.code === 410) {
+                Qmsg.error(res.data.msg);
+            }
+        })
+    }
+
+    function setDefault(id) {
+        axios({
+            url: `/category/set_default/${id}`,
+            method: "post",
+        }).then(res => {
+            if (res.data.code === 200) {
+                Qmsg.success("设为默认成功");
+            }
+            if (res.data.code === 410) {
+                Qmsg.success("设为默认失败");
+            }
+        })
+    }
+
+    function deleteCate(id) {
+        axios({
+            url: `/category/delete/${id}`,
+            method: "post",
+        }).then(res => {
+            if (res.data.code === 200) {
+                Qmsg.success("删除分类成功");
+            }
+            if (res.data.code === 410) {
+                Qmsg.error(res.data.msg);
+            }
+            is_del.close();
+        })
+    }
+
+
+
+
+
+</script>
+{% endblock code %}

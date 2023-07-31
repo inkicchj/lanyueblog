@@ -1,0 +1,292 @@
+{% extends "base_manage.html" %}
+
+{% block head %}
+{{ super() }}
+<script type="text/javascript" src="/assets/js/arttemplate.js"></script>
+<script type="text/javascript" src="/assets/js/moment-with-locales.js"></script>
+<link rel="stylesheet" href="/assets/css/pagination.css">
+<script type="text/javascript" src="/assets/js/pagination.js"></script>
+
+<style>
+    .table-body a {
+        text-decoration: none;
+        color: black;
+    }
+
+    .table-body a:hover {
+        cursor: pointer;
+        color: blueviolet;
+    }
+
+</style>
+{% endblock head %}
+
+{% block sidebar %}
+{% include "component_manage/sidebar.html" %}
+{% endblock sidebar %}
+
+{% block main %}
+<div style="margin-bottom: 20px;">
+    <div class="mdui-clearfix">
+        <div class="mdui-float-left">
+            <div class="mdui-btn-group" style="margin-bottom: 20px;">
+                <button type="button" id="publish" class="mdui-btn mdui-btn-active">
+                    <a>已发布</a>
+                </button>
+                <button type="button" id="review" class="mdui-btn">
+                    <a>待审核</a>
+                </button>
+                <button type="button" id="draft" class="mdui-btn">
+                    <a>草稿</a>
+                </button>
+                <button type="button" id="brush" class="mdui-btn">
+                    <a>垃圾箱</a>
+                </button>
+
+            </div>
+        </div>
+        <div class="mdui-float-right" style="display: flex;">
+            <select class="mdui-select" mdui-select style="margin-right: 10px;" id="category">
+                <option value="0">全部分类</option>
+                {% for cate in categories %}
+                <option value="{{cate.id}}">{{cate.name}}({{cate.type}})</option>
+                {% endfor %}
+            </select>
+            <select class="mdui-select" mdui-select style="margin-right: 10px;" id="article-type">
+                <option value="All">全部类型</option>
+                <option value="Blog">文章</option>
+                <option value="Activity">动态</option>
+                <option value="Book">书录</option>
+                <option value="Link">链接</option>
+                <option value="Page">页面</option>
+            </select>
+
+            <input class="mdui-textfield-input" type="text" placeholder="标题"
+                   style="margin-right: 10px;" id="article-title" />
+            <button class="mdui-btn mdui-ripple mdui-color-indigo-100" id="article-filter">过滤</button>
+
+        </div>
+    </div>
+
+    <div>
+        <div>
+            <button class="mdui-btn mdui-color-indigo-100"
+                    mdui-menu="{target: '#operate-menu'}">操作选择项</button>
+            <ul class="mdui-menu" id="operate-menu">
+                <li class="mdui-menu-item">
+                    <a class="mdui-ripple" onclick="setStatus('Publish')">发布</a>
+                </li>
+                <li class="mdui-menu-item">
+                    <a class="mdui-ripple" onclick="setStatus('Review')">待审核</a>
+                </li>
+                <li class="mdui-menu-item">
+                    <a class="mdui-ripple" onclick="setStatus('Draft')">草稿</a>
+                </li>
+                <li class="mdui-menu-item">
+                    <a class="mdui-ripple" onclick="setStatus('Brush')">垃圾箱</a>
+                </li>
+                <li class="mdui-menu-item">
+                    <a class="mdui-ripple" onclick="onDelete()">删除</a>
+                </li>
+            </ul>
+        </div>
+
+    </div>
+</div>
+<div class="mdui-table-fluid" style="margin-bottom: 20px;">
+    <table class="mdui-table">
+        <thead>
+        <tr>
+            <th>
+                <label class="mdui-checkbox">
+                    <input type="checkbox" onchange="selectAll(event)"/>
+                    <i class="mdui-checkbox-icon"></i>
+                </label>
+            </th>
+            <th>标题</th>
+            <th>类型</th>
+            <th>分类</th>
+            <th>创建时间</th>
+            <th>更新时间</th>
+            <th>作者</th>
+            <th>操作</th>
+        </tr>
+        </thead>
+        <tbody class="table-body" id="table-body">
+
+        </tbody>
+    </table>
+</div>
+<!-- 分页 -->
+<div class="mdui-row">
+    <div class="mdui-col-lg-12" style="margin-bottom: 100px" id="pagination">
+
+    </div>
+</div>
+{% endblock main %}
+
+{% block code %}
+{% include "templates/tp_article_item.html" %}
+<script type="text/javascript">
+
+    let list = new Pagination("pagination", {
+        page: 1,
+        itemNum: 5,
+        url: "/article/list",
+        param: {
+            title: null,
+            category_id: null,
+            type: null,
+            status: "Publish"
+        },
+        onSuccess: function (res) {
+            if (res.data.code === 200) {
+                template.defaults.imports.moment = function (timestamp) {
+                    return moment.unix(timestamp).format("YYYY-MM-DD hh:mm");
+                }
+                document.getElementById("table-body").innerHTML = template("tp-article-item", res.data);
+            }
+        }
+    })
+    list.init();
+    document.getElementById("publish").addEventListener("click", (e)=>{
+        document.getElementById("publish").classList.add("mdui-btn-active");
+        document.getElementById("review").classList.remove("mdui-btn-active");
+        document.getElementById("draft").classList.remove("mdui-btn-active");
+        document.getElementById("brush").classList.remove("mdui-btn-active");
+        list.param.status = "Publish";
+        list.pagination.page = 1;
+        list.init();
+    })
+    document.getElementById("draft").addEventListener("click", (e)=>{
+        document.getElementById("draft").classList.add("mdui-btn-active");
+        document.getElementById("review").classList.remove("mdui-btn-active");
+        document.getElementById("publish").classList.remove("mdui-btn-active");
+        document.getElementById("brush").classList.remove("mdui-btn-active");
+        list.param.status = "Draft";
+        list.pagination.page = 1;
+        list.init();
+    })
+    document.getElementById("review").addEventListener("click", (e)=>{
+        document.getElementById("review").classList.add("mdui-btn-active");
+        document.getElementById("draft").classList.remove("mdui-btn-active");
+        document.getElementById("publish").classList.remove("mdui-btn-active");
+        document.getElementById("brush").classList.remove("mdui-btn-active");
+        list.param.status = "Review";
+        list.pagination.page = 1;
+        list.init();
+    })
+    document.getElementById("brush").addEventListener("click", (e)=>{
+        document.getElementById("brush").classList.add("mdui-btn-active");
+        document.getElementById("review").classList.remove("mdui-btn-active");
+        document.getElementById("publish").classList.remove("mdui-btn-active");
+        document.getElementById("draft").classList.remove("mdui-btn-active");
+        list.param.status = "Brush";
+        list.pagination.page = 1;
+        list.init();
+    })
+
+    document.getElementById("article-filter").addEventListener("click", (e) => {
+        let category = document.getElementById("category");
+        let cate_index = category.selectedIndex;
+        console.log(category[cate_index].value);
+        if (category[cate_index].value==='0') {
+            list.param.category_id = null;
+        } else {
+            list.param.category_id = parseInt(category[cate_index].value);
+        }
+        let types = document.getElementById("article-type");
+        let tIndex = types.selectedIndex;
+        if (types[tIndex].value==='All') {
+            list.param.type = null;
+        } else {
+            list.param.type = types[tIndex].value;
+        }
+        list.param.title = document.getElementById("article-title").value;
+        list.init();
+    })
+
+    //多选
+    let selects = [];
+    function selectId(e) {
+        let value = parseInt(e.target.value);
+        if (e.target.checked) {
+            if (!selects.includes(value)) {
+                selects.push(value);
+            }
+        } else {
+            for (let i=0;i<selects.length;i++) {
+                if (selects[i] === value) {
+                    selects.splice(i, 1);
+                }
+            }
+        }
+        console.log(selects);
+    }
+
+    function selectAll(e) {
+        let articles = document.getElementsByName("article-id");
+        if (e.target.checked) {
+            for (let i=0;i<articles.length;i++) {
+                if (!articles[i].checked) {
+                    articles[i].checked = true;
+                    if (!selects.includes(parseInt(articles[i].value))) {
+                        selects.push(parseInt(articles[i].value))
+                    }
+
+                }
+            }
+        } else {
+            for (let i=0;i<articles.length;i++) {
+                if (articles[i].checked) {
+                    articles[i].checked = false;
+
+                    for (let j=0;j<selects.length;j++) {
+                        if (selects[j] === parseInt(articles[i].value)) {
+                            selects.splice(j, 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function setStatus(status) {
+        axios.all(selects.map(id => {
+            axios({
+                url: `/article/set_status/${id}`,
+                method: "post",
+                data: {
+                    content: status
+                }
+            }).then(res => {
+                if (res.data.code === 200) {
+                    Qmsg.success(`设置${id}为${status}成功`);
+                } else {
+                    Qmsg.error(`设置${id}为${status}失败`);
+                }
+            })
+        })).then(axios.spread((acc, prem)=>{
+            selects = [];
+        }))
+    }
+
+    function onDelete() {
+        axios.all(selects.map(id => {
+            axios({
+                url: `/article/delete/${id}`,
+                method: "post",
+            }).then(res => {
+                if (res.data.code === 200) {
+                    Qmsg.success(`删除${id}成功`);
+                } else {
+                    Qmsg.error(`删除${id}失败`);
+                }
+            })
+        })).then(axios.spread((acc, prem)=>{
+            selects = [];
+        }))
+    }
+
+</script>
+{% endblock code %}

@@ -1,0 +1,147 @@
+{% extends "base_manage.html" %}
+
+{% block head %}
+{{ super() }}
+<script type="text/javascript" src="/assets/js/arttemplate.js"></script>
+<script type="text/javascript" src="/assets/js/moment-with-locales.js"></script>
+<link rel="stylesheet" href="/assets/css/pagination.css">
+<script type="text/javascript" src="/assets/js/pagination.js"></script>
+{% endblock head %}
+
+{% block sidebar %}
+{% include "component_manage/sidebar.html" %}
+{% endblock sidebar %}
+
+{% block main %}
+<div class="mdui-container" style="margin-top: 50px;">
+    <div class="mdui-row">
+        <div style="margin-bottom: 20px;">
+
+            <div>
+                <div>
+                    <button class="mdui-btn mdui-color-indigo-100"
+                            mdui-menu="{target: '#operate-menu'}">操作选择项</button>
+                    <ul class="mdui-menu" id="operate-menu">
+                        <li class="mdui-menu-item">
+                            <a href="javascript:;" class="mdui-ripple" onclick="onDelete()">删除</a>
+                        </li>
+                    </ul>
+                </div>
+
+            </div>
+        </div>
+        <div class="mdui-table-fluid" style="margin-bottom: 20px;">
+            <table class="mdui-table">
+                <thead>
+                <tr>
+                    <th>
+                        <label class="mdui-checkbox">
+                            <input type="checkbox" value="1" onchange="selectAll(event)" />
+                            <i class="mdui-checkbox-icon"></i>
+                        </label>
+                    </th>
+                    <th>预览</th>
+                    <th>名称</th>
+                    <th>上传时间</th>
+                    <th>大小</th>
+                    <th>上传者</th>
+                    <th>所属内容</th>
+                </tr>
+                </thead>
+                <tbody class="table-body" id="data-container">
+
+                </tbody>
+            </table>
+        </div>
+        <!-- 分页 -->
+        <div class="mdui-row mdui-p-a-1" id="pagination" style="margin-bottom: 100px;">
+
+        </div>
+
+    </div>
+</div>
+{% endblock main %}
+
+{% block code %}
+{% include "templates/tp_file_item.html" %}
+<script type="text/javascript">
+    let list = new Pagination("pagination", {
+        page: 1,
+        itemNum: 5,
+        url: "/file/list",
+        param: {},
+        onSuccess: function (res) {
+            console.log(res);
+            if (res.data.code === 200) {
+                template.defaults.imports.moment = function (timestamp) {
+                    return moment.unix(timestamp).format("YYYY-MM-DD hh:mm");
+                }
+                document.getElementById("data-container").innerHTML = template("tp-file-item", res.data);
+            }
+        }
+    })
+    list.init();
+
+    //多选
+    let selects = [];
+    function selectId(e) {
+        let value = parseInt(e.target.value);
+        if (e.target.checked) {
+            if (!selects.includes(value)) {
+                selects.push(value);
+            }
+        } else {
+            for (let i=0;i<selects.length;i++) {
+                if (selects[i] === value) {
+                    selects.splice(i, 1);
+                }
+            }
+        }
+        console.log(selects);
+    }
+
+    function selectAll(e) {
+        let articles = document.getElementsByName("file-id");
+        if (e.target.checked) {
+            for (let i=0;i<articles.length;i++) {
+                if (!articles[i].checked) {
+                    articles[i].checked = true;
+                    if (!selects.includes(parseInt(articles[i].value))) {
+                        selects.push(parseInt(articles[i].value))
+                    }
+
+                }
+            }
+        } else {
+            for (let i=0;i<articles.length;i++) {
+                if (articles[i].checked) {
+                    articles[i].checked = false;
+
+                    for (let j=0;j<selects.length;j++) {
+                        if (selects[j] === parseInt(articles[i].value)) {
+                            selects.splice(j, 1);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    function onDelete() {
+        axios.all(selects.map(id => {
+            axios({
+                url: `/file/delete/${id}`,
+                method: "post",
+            }).then(res => {
+                if (res.data.code === 200) {
+                    Qmsg.success(`删除${id}成功`);
+                } else {
+                    Qmsg.error(`删除${id}失败`);
+                }
+            })
+        })).then(axios.spread((acc, prem)=>{
+            selects = [];
+        }))
+    }
+</script>
+{% endblock code %}

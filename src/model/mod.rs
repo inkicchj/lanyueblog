@@ -1,22 +1,31 @@
 pub mod user;
-pub mod post;
-use sqlx;
-use super::Data;
-use serde::Deserialize;
+pub mod article;
+pub mod category;
+pub mod comment;
+pub mod file;
 
-#[derive(Deserialize, sqlx::FromRow)]
-pub struct Count {
-    pub count: i64,
+use serde::Serialize;
+
+pub type Result<T> = std::result::Result<T, &'static str>;
+
+#[derive(Serialize, Debug)]
+pub struct Pagination<T: Serialize> {
+    pub total: u32,
+    pub total_page: u32,
+    pub page: u32,
+    pub page_size: u32,
+    pub data: T,
 }
 
-pub async fn count(table: &str) -> Result<i64, &'static str> {
-    let sql = format!("SELECT COUNT(*) as count FROM {}", table);
-    let res = sqlx::query_as::<_, Count>(&sql).fetch_one(&Data::get()).await;
-    match res {
-        Ok(r) => Ok(r.count),
-        Err(e) => {
-            println!("error: {}", e);    
-            Err("获取总数失败")
+impl<T: Serialize> Pagination<T> {
+    pub fn new(total: u32, page: u32, data: T) -> Self {
+        let total_page = f64::ceil(total as f64 / 15 as f64) as u32;
+        Self {
+            total,
+            total_page,
+            page,
+            page_size: 15,
+            data
         }
     }
 }

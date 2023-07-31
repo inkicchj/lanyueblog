@@ -1,13 +1,64 @@
 [database]
-uri = "sqlite://lanyue.db"
+#sqlite数据路地址
+uri = "sqlite://xxx.db"
+max_connect = 100
 
 [website]
-name = "揽月小屋"
-icon = "/static/img/logo.ico"
-background = "/static/img/15.jpg"
-copyright = "Power by lanyue"
-beian = "13123444"
+#网站名
+name = "xxx"
+#网站logo
+icon = "/assets/images/logo.png"
+#网站背景图片地址
+background = "/assets/images/bg.jpg"
+#网站版权
+copyright = "Copyright©2023"
+#网站备案号
+beian = "xxx"
+#是否开启注册，默认关闭
+register = false
+
+[attachment]
+#允许附件扩展名
+allow_ext = ["jpg","jpeg","png","mp4","wav","mp3","avi","zip","rar","7z","pdf","doc","docx","xlsx","xls","pptx"]
+#需要缩略图的附件扩展
+require_thumbnail = ["jpg","jpeg","png"]
+#缩略图压缩大小
+resize_thumbnail = 1000
+#附件保存文件夹 year month ident id id_hash ext
+save_dir = "uploads/xxx/{year}/{month}/{ident}.{ext}"
+# 缩略图文件夹
+thumbnail_extend = "_thumb"
+#允许附件大小/byte,默认50M
+max_size = 51457280
+# 一次最多上传数量
+max_files = 20
+# 头像保存文件夹
+avatar_dir = "uploads/xxx/{id}/avatar/{id_hash}.{ext}"
+# 背景保存文件夹
+cover_dir = "uploads/xxx/{id}/cover/{id_hash}.{ext}"
+# 文件上传并行数量
+parallel = 3
+# 分类背景保存文件夹
+cate_cover_dir = "uploads/xxx/{id}/{id_hash}.{ext}"
+
 
 [service]
-host = "0.0.0.0:8002"
-secret_key = "NTNNIKf2H%Hbp3r1q2F2TidIv3OHHB4UfsaRIBhxGT@hp@jkwa1magYPmUiYXj$D"
+#主机地址
+host = "0.0.0.0:8000"
+#session加密密钥
+secret_key = "xxx"
+#用户登录时长 秒
+max_secs = 86400
+# 百度云内容审核key
+access_api_key = "xxx"
+access_secret_key = "xxx"
+
+[cache]
+#缓存项目数,100
+capacity = 100
+#缓存总容量,默认10M，单位字节
+weight = 10485760
+#计数器,100
+counter = 100
+#缓存时长 秒
+max_secs = 86400

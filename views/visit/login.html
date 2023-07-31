@@ -1,53 +1,63 @@
 {% extends "base.html" %}
 
-{% block title %}{{ web.name }}{% endblock title %}
-
+{% block title %}登录-{{web.name}}{% endblock title %}
 {% block head %}
 {{ super() }}
 {% endblock head %}
 
-
 {% block main %}
-<div class="card" style="margin-top: 150px;">
-    <div class="card-content">
-        <div class="content">
-            <h3 style="margin-bottom: 30px;">登录</h3>
-            <h4>邮箱</h4>
-            <input class="input" type="text" placeholder="example@xxx.com" id="email">
-            <h4 style="margin-top: 20px;">密码</h4>
-            <input class="input" type="password" placeholder="6-18位" id="password">
-            <button class="button is-primary" style="margin-top: 30px;" onclick="login()">登录</button>
+<div class="mdui-color-theme-50" style="position: fixed;top: 0;left: 0;right: 0;bottom: 0;display: flex;align-items: center;justify-content: center;">
+    <div class="mdui-row" style="width: 100%;">
+        <div class="mdui-col-lg-4 mdui-col-offset-lg-4">
+            <div class="mdui-card mdui-p-l-3 mdui-p-r-3 mdui-p-t-2 mdui-p-b-2" style="border-radius: 15px;">
+                <div class="mdui-card-primary">
+                    <div class="mdui-card-primary-title">登录至 {{web.name}}</div>
+                </div>
+                <div class="mdui-card-content">
+                    <div class="mdui-textfield mdui-textfield-floating-label">
+                        <label class="mdui-textfield-label">邮箱</label>
+                        <input class="mdui-textfield-input" type="email" id="email"/>
+                    </div>
+                    <div class="mdui-textfield mdui-textfield-floating-label">
+                        <label class="mdui-textfield-label">密码</label>
+                        <input class="mdui-textfield-input" type="password" id="password"/>
+                    </div>
+                    <div class="mdui-clearfix mdui-m-t-2">
+                        <div class="mdui-float-right">
+                            <button class="mdui-btn mdui-ripple mdui-color-theme-100 mdui-text-color-theme-text" id="login">登录</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
+
     </div>
+
 </div>
 {% endblock main %}
 
-{% block footer %}
-{% endblock footer %}
-
-{% block script %}
+{% block code %}
 <script type="text/javascript">
-    function login() {
-        let email = document.getElementById("email").value;
-        let password = document.getElementById("password").value;
-        axios({
-            method: 'post',
-            url: '/user/login',
-            data: {
-                email: email,
-                password: password
-            }
-        }).then(res => {
-
-            if (res.data.code == 410) {
-                Qmsg.warning(res.data.msg, {
-                    timeout: 3000
-                });
-            }
-            if (res.data.code == 200 ) {
-                window.location.replace("/");
-            }
+        mdui.$("#login").on("click", function (e){
+            let email = mdui.$("#email")[0].value;
+            let password = mdui.$("#password")[0].value;
+            console.log(email);
+            axios({
+                url: "/user/login",
+                method: "post",
+                data: {
+                    email: email,
+                    password: password
+                }
+            }).then(res => {
+                if (res.data.code === 200) {
+                    location.replace("/");
+                }
+                if (res.data.code === 410) {
+                    Qmsg.warning(res.data.msg);
+                }
+            })
         });
-    }
+
 </script>
-{% endblock script %}
+{% endblock code %}

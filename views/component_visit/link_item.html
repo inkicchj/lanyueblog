@@ -1,0 +1,25 @@
+{% macro init(data) %}
+<div class="article-item">
+<div class="mdui-p-a-2">
+    <!-- 卡片的媒体内容，可以包含图片、视频等媒体内容，以及标题、副标题 -->
+    <div style="display: flex;">
+        <div>
+            <img src="{{ data.cover }}"
+                 style="width: 50px;height: 50px;border-radius: 40px;object-fit: cover;"
+            >
+        </div>
+        <div class="mdui-m-l-2" style="display: flex;flex-direction: column;justify-content: space-between;">
+            <div>
+                <a href="{{ data.alias }}" target="_blank" class="mdui-typo-body-1 mdui-text-color-theme-text" style="font-weight: bold;text-decoration: none;">{{ data.title }}</a>
+            </div>
+            <div>
+                <span class="mdui-typo-caption-opacity">{{ data.description }}</span>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+</div>
+{% endmacro init %}
+

@@ -1,0 +1,45 @@
+{% macro init(data) %}
+<div class="article-item">
+    <div class="mdui-card mdui-shadow-1 mdui-color-theme-accent" style="border-radius: 15px;">
+        <!-- 卡片的媒体内容 -->
+        {% if data.cover %}
+        <div class="mdui-card-media">
+            <img src="{{ data.cover }}"
+                 style="width: 100%;max-height: 500px;object-fit: cover;"/>
+        </div>
+        {% endif %}
+        <!-- 卡片的标题和副标题 -->
+        <div class="mdui-card-primary">
+            <a href="/detail/{{ data.alias | default(value=data.id) }}" target="_blank" class="mdui-text-color-theme-text item-title mdui-typo-title"
+               style="text-decoration: none;">{{ data.title }}</a>
+            <div class="mdui-card-primary-subtitle mdui-text-color-theme-500 mdui-m-t-1" style="font-size: 13px;display: flex;">
+                <a class="mdui-text-color-theme-500" href="/category/{{ data.category_alias | default(value=data.category_id) }}" style="display: flex;align-items: center;text-decoration: none;">
+                    <i class="mdui-icon material-icons" style="font-size: 16px;">folder_open</i>
+                    {{ data.category_name }}
+                </a>
+                <a style="display: flex;align-items: center;margin-left: 10px">
+                    <i class="mdui-icon material-icons" style="font-size: 16px;">access_time</i>
+                    {{ moment(time=data.updated) }}
+                </a>
+                <a style="display: flex;align-items: center;margin-left: 10px">
+                    <i class="mdui-icon material-icons" style="font-size: 16px;">remove_red_eye</i>
+                    {{ data.views | get_nums(id=data.id, mode=1) }} 次浏览
+                </a>
+            </div>
+        </div>
+        <!-- 卡片的内容 -->
+        {% if data.description %}
+        <div class="mdui-card-content">{{ data.description }}</div>
+        {% endif %}
+        <div class="mdui-p-a-2">
+            <a class="mdui-chip mdui-m-r-1 mdui-color-indigo-50" href="/author/{{ data.user_id }}">
+                <img class="mdui-chip-icon"
+                     src="/{{ data.user_avatar | default(value="assets/images/user.png") | safe }}?date={{ now() }}"
+                     style="object-fit: cover;"/>
+                <span class="mdui-chip-title">{{ data.user_nickname }}</span>
+            </a>
+
+        </div>
+    </div>
+</div>
+{% endmacro init %}

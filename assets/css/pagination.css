@@ -1,0 +1,19 @@
+.pagination-btn {
+    height: 35px;
+    width: 35px;
+    border-radius: 3px;
+    margin: 3px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: white;
+    border: solid 1px #d1d1d1;
+}
+.pagination-btn:hover {
+    color: white;
+    background: #f38181;
+}
+.pagination-btn-active {
+    color: white;
+    background: #f38181;
+}

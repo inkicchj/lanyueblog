@@ -1,0 +1,56 @@
+{% macro init(article) %}
+<div class="mdui-container-fluid "
+     style="height: 320px;position: relative;border-radius: 15px;overflow: hidden;display: flex;justify-content: center;align-items: center;">
+    <img src="{% if article.cover %}{{ article.cover }}{% else %}/assets/images/bg.jpg{% endif %}"
+         style="position: absolute;top: 0;left: 0;width: 100%;height: 100%;object-fit: cover;"/>
+    <span class="mdui-typo-display-1 mdui-text-color-white"
+          data-article="{{article.id}}"
+          id="article-title"
+          style="z-index: 2;text-shadow: 0px 1px 2px black;">{{ article.title }}</span>
+</div>
+<div class="mdui-container-fluid " style="margin-top: 30px;">
+    <div style="display: flex;justify-content: start;flex-wrap: wrap;">
+        <a class="mdui-chip mdui-color-theme-100 mdui-m-r-1" href="/author/{{ article.user_id }}">
+            <img class="mdui-chip-icon"
+                 src="/{{ article.user_avatar | default(value="assets/images/user.png") | safe }}"
+            style="object-fit: cover;"/>
+            <span class="mdui-chip-title" id="owner-nickname" data-owner="{{article.user_id}}">{{ article.user_nickname }}</span>
+        </a>
+        {% if article.category_id %}
+        <a class="mdui-chip mdui-color-theme-100 mdui-m-r-1"
+           href="/category/{{ article.category_alias | default(value=article.category_id) }}">
+                            <span class="mdui-chip-icon mdui-color-theme-200">
+                                <i class="mdui-icon material-icons">folder_open</i>
+                            </span>
+            <span class="mdui-chip-title">{{ article.category_name }}</span>
+        </a>
+        {% endif %}
+        <a class="mdui-chip mdui-color-theme-100 mdui-m-r-1">
+                            <span class="mdui-chip-icon mdui-color-theme-200">
+                                <i class="mdui-icon material-icons">access_time</i>
+                            </span>
+            <span class="mdui-chip-title">{{ moment(time=article.updated) }}</span>
+        </a>
+    </div>
+</div>
+
+<div class="mdui-container-fluid markdown-body  mdui-color-theme-50" id="article-content" style="margin-top: 30px;">
+    {% if article.content %}
+        {{ article.content | safe }}
+    {% endif %}
+</div>
+<div class="mdui-container-fluid" style="margin-top: 30px;margin-bottom: 72px;">
+    <div style="display: flex;justify-content: center;">
+        <div class="mdui-m-a-1">
+            <button class="mdui-btn mdui-color-theme-100 mdui-ripple" id="like-btn" onclick="onLike({{ article.id }})">
+                <i class="mdui-icon mdui-icon-left material-icons">thumb_up</i>点赞 <span id="like-num">{{ article.likes | get_nums(id=article.id,mode=0) }}</span>
+            </button>
+        </div>
+        <div class="mdui-m-a-1">
+            <button class="mdui-btn mdui-color-theme-100 mdui-ripple">
+                <i class="mdui-icon mdui-icon-left material-icons">share</i>分享
+            </button>
+        </div>
+    </div>
+</div>
+{% endmacro init %}

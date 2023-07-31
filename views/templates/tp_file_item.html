@@ -1,0 +1,32 @@
+{% raw %}
+<script id="tp-file-item" type="text/html">
+    {{each data.data file key}}
+    <tr>
+        <td>
+            <label class="mdui-checkbox">
+                <input type="checkbox" name="file-id" value="{{file.id}}" onclick="selectId(event)"/>
+                <i class="mdui-checkbox-icon"></i>
+            </label>
+        </td>
+        <td>
+
+            <img style="height: 80px;width: 100px;object-fit: cover;border-radius: 5px;"
+                 src="http://192.168.1.105:8002/{{if file.thumbnail}}{{file.thumbnail}}{{else}}assets/images/default.jpg{{/if}}"/>
+        </td>
+        <td>
+            <a href="javascript:;">{{file.name}}</a>
+        </td>
+        <td>
+            <a href="javascript:;">{{moment(file.uploaded)}}</a>
+        </td>
+        <td>{{file.size/1024/1024>=1?(file.size/1024/1024).toFixed(2)+'M':(file.size/1024).toFixed(2)+'KB'}}</td>
+        <td>
+            <a href="/author/{{file.user_id}}">{{file.user_nickname}}</a>
+        </td>
+        <td>
+            <a href="/detail/{{if file.article_alias}}{{file.article_alias}}{{else}}{{file.article_id}}{{/if}}">{{file.article_title}}</a>
+        </td>
+    </tr>
+    {{/each}}
+</script>
+{% endraw %}

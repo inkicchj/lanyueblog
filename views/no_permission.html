@@ -1,19 +1,20 @@
 {% extends "base.html" %}
 
+{% block title %}登录-{{web.name}}{% endblock title %}
+{% block head %}
+{{ super() }}
+{% endblock head %}
 
 {% block main %}
-<div style="position: fixed;top: 0;right: 0;left: 0;bottom: 0;display: flex;justify-content: center;align-items: center;">
-    <div class="card">
-        <div class="card-content">
-          <div class="content">
-            <span class="icon-text has-text-danger">
-                <span class="icon">
-                    <ion-icon name="ban-outline"></ion-icon>
-                </span>
-                <span>您没有权限访问此页面</span>
-              </span>
-          </div>
+<div class="mdui-color-theme-50" style="position: fixed;top: 0;left: 0;right: 0;bottom: 0;display: flex;align-items: center;justify-content: center;">
+  <div class="mdui-row" style="width: 100%;">
+    <div class="mdui-col-lg-4 mdui-col-offset-lg-4">
+      <div class="mdui-card mdui-p-l-3 mdui-p-r-3 mdui-p-t-2 mdui-p-b-2" style="border-radius: 15px;">
+        <div class="mdui-card-content">
+          <span class="mdui-typo-subheading">对不起，你没有操作权限</span>
         </div>
       </div>
+    </div>
+  </div>
 </div>
 {% endblock main %}

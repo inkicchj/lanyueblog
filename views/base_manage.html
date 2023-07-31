@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="zh-cmn-Hans">
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, shrink-to-fit=no" />
+    <meta name="renderer" content="webkit" />
+    <meta name="force-rendering" content="webkit" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1" />
+
+
+    <!-- MDUI CSS -->
+    <link rel="stylesheet" href="/assets/mdui/css/mdui.min.css" />
+
+    <script type="text/javascript" src="/assets/js/axios.min.js"></script>
+    <link rel="stylesheet" href="/assets/css/message.min.css">
+    <script type="text/javascript" src="/assets/js/message.min.js"></script>
+
+    <title>{% block title %}{% endblock title %}揽月小屋</title>
+    {% block head %}
+    {% endblock head %}
+</head>
+
+<body class="mdui-theme-primary-indigo mdui-drawer-body-left">
+    {% block sidebar %}
+
+    {% endblock sidebar %}
+
+
+    <!-- 顶部菜单 -->
+    <div class="mdui-container-fluid ">
+        <div class="mdui-clearfix mdui-p-a-2">
+            <div class="mdui-float-left">
+                <div style="display: flex;align-items: center;">
+                    <button class="mdui-btn mdui-btn-icon mdui-ripple" mdui-drawer="{target: '#left-bar'}">
+                        <i class="mdui-icon material-icons">menu</i>
+                    </button>
+                </div>
+            </div>
+            <div class="mdui-float-right">
+                <!-- 菜单 -->
+                {% if user %}
+                <div class="mdui-btn mdui-btn-icon" mdui-menu="{target:'#index-menu'}"
+                     style="display: flex;align-items: center;">
+                    <img class="mdui-img-circle" src="/{{ user.avatar | default(value="assets/images/user.png") | safe }}?date={{ now() }}"
+                         style="width: 30px;height: 30px;object-fit: cover;" />
+                </div>
+                <ul class="mdui-menu mdui-p-t-0" id="index-menu">
+                    <!-- 用户信息卡 -->
+                    <li class="mdui-menu-item"
+                        style="background-image: url(/{{ user.cover | default(value="assets/images/bg.jpg") | safe }}?date={{ now() }});background-position: center;background-size: cover;height: 142px;">
+                        <div class="mdui-p-t-3 mdui-m-b-1"
+                             style="display: flex;justify-content: center;flex-direction: column;">
+                            <div style="display: flex;justify-content: center;">
+                                <img class="mdui-img-circle"
+                                     src="/{{ user.avatar | default(value="assets/images/user.png") | safe }}?date={{ now() }}"
+                                     style="width: 50px;height: 50px;object-fit: cover;border: solid 2px white;" />
+                            </div>
+                            <div style="display: flex;justify-content: center;">
+                                <a href="/author/{{ user.id }}" class="mdui-text-color-white mdui-typo-body-1">{{ user.nickname }}</a>
+                            </div>
+                        </div>
+
+                    </li>
+                    <li class="mdui-menu-item">
+                        <a href="/" class="mdui-ripple">返回首页</a>
+                    </li>
+                    <li class="mdui-divider"></li>
+                    <li class="mdui-menu-item">
+                        <a href="javascript:;" class="mdui-ripple">退出登录</a>
+                    </li>
+                </ul>
+                {% else %}
+                <a class="mdui-btn mdui-btn-icon" href="/login"
+                   style="display: flex;align-items: center;">
+                    <img class="mdui-img-circle" src="/assets/images/user.png"
+                         style="width: 30px;height: 30px;object-fit: cover;" />
+                </a>
+                {% endif %}
+                <!-- 菜单结束 -->
+            </div>
+        </div>
+        <!-- 正文内容 -->
+        <div class="mdui-container" style="margin-top: 50px;">
+            <div class="mdui-row">
+                {% block main %}
+                {% endblock main %}
+            </div>
+        </div>
+        <!-- 正文内容结束 -->
+    </div>
+
+
+    <script src="/assets/mdui/js/mdui.min.js"></script>
+    {% block code %}
+    {% endblock code %}
+</body>
+</html>

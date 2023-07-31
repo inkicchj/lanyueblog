@@ -1,0 +1,285 @@
+{% extends "base.html" %}
+
+
+{% block title %}{{author.nickname}}-{{web.name}}{% endblock title %}
+{% block head %}
+
+{{ super() }}
+
+<script src="/assets/js/md5.min.js"></script>
+<link rel="stylesheet" href="/assets/css/upload.css" />
+<!-- ionicons -->
+<script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+<script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+{% endblock head %}
+
+{% block nav %}
+{% include "component_visit/nav.html" %}
+{% endblock nav %}
+
+{% block main %}
+<!-- 正文内容 -->
+<div style="height: 112px;"></div>
+<div class="mdui-container">
+    <div class="mdui-row">
+        <div class="mdui-col-lg-12">
+            <div class="mdui-row mdui-p-a-3" style="
+                    background-image: url(/{{ author.cover | default(value="assets/images/bg.jpg") | safe }}?date={{ now() }});
+                    height: 400px;
+                    background-position: center;
+                    background-size: cover;
+                    position: relative;
+                    border-radius: 15px;">
+                <div class="mdui-col-lg-4 mdui-color-indigo-50 mdui-p-a-2"
+                     style="height: 100%;border-radius: 15px;">
+                    <div style="display: flex;justify-content: center;">
+                        <div style="position: relative;width: 80px;height: 80px;padding: 5px;">
+                            <img class="mdui-img-circle"
+                                 style="object-fit: cover;width: 100%;height: 100%;border: solid 2px white;"
+                                 src="/{{ author.avatar | default(value="assets/images/user.png") | safe }}?date={{ now() }}"/>
+                            {% if user %}
+                            {% if user.id == author.id %}
+                            <a class="mdui-color-white mdui-shadow-3 mdui-ripple"
+                               mdui-dialog="{target: '#edit-info'}" style="
+                                width: 30px;
+                                height: 30px;
+                                display: flex;
+                                justify-content: center;
+                                align-items: center;
+                                border-radius: 40px;
+                                position: absolute;
+                                bottom: 0;
+                                right: 0;">
+                                <ion-icon name="create-outline"></ion-icon>
+                            </a>
+                            {% endif %}
+                            {% endif %}
+                        </div>
+
+                    </div>
+                    <div class="mdui-m-t-2" style="display: flex;justify-content: center;">
+                        <span class="mdui-typo-title">{{author.nickname}}</span>
+                    </div>
+
+                        {% if user %}
+                        {% if user.id == author.id and user.permission == "Admin" %}
+                    <div class="mdui-m-t-2" style="display: flex;justify-content: center;">
+                        <span class="mdui-typo-body-1-opacity">{{author.email}}</span>
+                    </div>
+                        {% endif %}
+                        {% endif %}
+
+                    <div style="display: flex;justify-content: center;">
+                        {% if author.signature %}
+                        <p class="mdui-typo-body-2-opacity">{{author.signature}}</p>
+                        {% else %}
+                        <p class="mdui-typo-body-2-opacity">TA什么都没有写~</p>
+                        {% endif %}
+                    </div>
+                    <div style="display: flex;justify-content: center;">
+                        {% if author.social %}
+                            {% set socials = author.social | split(pat=";") %}
+                            {% for s in socials %}
+                                {% if s %}
+                                    {% set s1 = s | split(pat=">") %}
+                                    <a href="{{ s1[1] }}" class="mdui-p-a-1 mdui-color-indigo-100 mdui-ripple"
+                                        style="border-radius: 3px;margin: 2px;" target="_blank">
+                                        <ion-icon name="logo-{{ s1[0] }}"></ion-icon>
+                                    </a>
+                                {% endif %}
+                            {% endfor %}
+                        {% endif %}
+                    </div>
+                    <div style="display: flex;padding: 10px;margin-top: 20px;">
+                        <div style="flex: 1;display: flex;align-items: center;flex-direction: column;">
+                            <p class="mdui-typo-subheading">文章</p>
+                            <span class="mdui-typo-title">{{ author.articles }}</span>
+                        </div>
+<!--                        <div style="flex: 1;display: flex;align-items: center;flex-direction: column;">-->
+<!--                            <p class="mdui-typo-subheading">点赞</p>-->
+<!--                            <span class="mdui-typo-title">2333</span>-->
+<!--                        </div>-->
+<!--                        <div style="flex: 1;display: flex;align-items: center;flex-direction: column;">-->
+<!--                            <p class="mdui-typo-subheading">评论</p>-->
+<!--                            <span class="mdui-typo-title">2333</span>-->
+<!--                        </div>-->
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    {% if user %}
+    {% if user.id == author.id %}
+    <!-- 编辑信息弹窗 -->
+    <div class="mdui-dialog" id="edit-info">
+        <div class="mdui-dialog-title">编辑资料</div>
+        <div class="mdui-dialog-content">
+            <div style="margin-bottom: 20px;">
+                <span class="mdui-typo-subheading">头像</span>
+                <div>
+                    <input type="file" id="upload-avatar" name="image"
+                           data-max-file-size="{{ file.max_size }}" data-max-parallel="{{ file.parallel }}" data-max-files="1">
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <span class="mdui-typo-subheading">背景</span>
+                <div>
+                    <input type="file" id="upload-cover" name="image"
+                           data-max-file-size="{{ file.max_size }}" data-max-parallel="{{ file.parallel }}" data-max-files="1">
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <span class="mdui-typo-subheading">重要信息</span>
+                <div class="mdui-textfield">
+                    <label class="mdui-textfield-label">邮箱</label>
+                    <input class="mdui-textfield-input" value="{{ author.email }}" name="email" type="email"/>
+                </div>
+                <div class="mdui-clearfix">
+                    <button id="user-email-save"
+                            onclick="updateEmail()"
+                            class="mdui-btn mdui-btn-dense mdui-color-theme-100 mdui-ripple mdui-float-right">提交
+                    </button>
+                </div>
+            </div>
+            <div style="margin-bottom: 20px;">
+                <span class="mdui-typo-subheading">基本信息</span>
+                <div class="mdui-textfield">
+                    <label class="mdui-textfield-label">昵称</label>
+                    <input class="mdui-textfield-input" value="{{ author.nickname }}" name="nickname" type="text" maxlength="20"/>
+                </div>
+                <div class="mdui-textfield">
+                    <label class="mdui-textfield-label">个性签名</label>
+                    <textarea class="mdui-textfield-input" name="signature" maxlength="200">{{ author.signature }}</textarea>
+                </div>
+                <div class="mdui-textfield">
+                    <label class="mdui-textfield-label">社交平台</label>
+                    <textarea class="mdui-textfield-input" name="social">{{ author.social }}</textarea>
+                </div>
+                <div class="mdui-clearfix">
+                    <button id="user-info-save"
+                            onclick="updateInfo()"
+                            class="mdui-btn mdui-btn-dense mdui-color-theme-100 mdui-ripple mdui-float-right">提交
+                    </button>
+                </div>
+            </div>
+
+            <div style="margin-bottom: 20px;">
+                <span class="mdui-typo-subheading">更改密码</span>
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">原密码</label>
+                    <input class="mdui-textfield-input" name="old_pwd" type="password"/>
+                </div>
+                <div class="mdui-textfield mdui-textfield-floating-label">
+                    <label class="mdui-textfield-label">新密码</label>
+                    <input class="mdui-textfield-input" name="new_pwd" type="password"/>
+                    <div class="mdui-textfield-helper"> 6-18 位密码</div>
+                </div>
+                <div class="mdui-clearfix">
+                    <button id="user-pwd-save"
+                            onclick="updatePassword()"
+                            class="mdui-btn mdui-btn-dense mdui-color-theme-100 mdui-ripple mdui-float-right">提交
+                    </button>
+                </div>
+            </div>
+
+
+        </div>
+        <div class="mdui-dialog-actions">
+            <button class="mdui-btn mdui-ripple" mdui-dialog-close>关闭</button>
+        </div>
+    </div>
+    {% endif %}
+    {% endif %}
+</div>
+
+<!-- 正文内容结束 -->
+{% endblock main %}
+
+{% block code %}
+<script type="text/javascript" src="/assets/js/upload.js"></script>
+<script type="text/javascript">
+    let uploadAvatar = new FileUpload("upload-avatar", {
+        upload: {
+            url: "/user/update_avatar",
+            method: "post"
+        },
+    })
+    uploadAvatar.start();
+
+    let uploadCover = new FileUpload("upload-cover", {
+        upload: {
+            url: "/user/update_cover",
+            method: "post"
+        },
+    })
+    uploadCover.start();
+
+
+    let email = document.getElementsByName("email")[0];
+    let nickname = document.getElementsByName("nickname")[0];
+    let signature = document.getElementsByName("signature")[0];
+    let social = document.getElementsByName("social")[0];
+    let old_pwd = document.getElementsByName("old_pwd")[0];
+    let new_pwd = document.getElementsByName("new_pwd")[0];
+    function updateInfo() {
+
+            axios({
+                url: `/user/update_info`,
+                method: "post",
+                data: {
+                    nickname: nickname.value,
+                    signature: signature.value,
+                    social: social.value,
+                }
+            }).then(res=>{
+                if (res.data.code === 200) {
+                    Qmsg.success("更新用户信息成功");
+                }
+                if (res.data.code === 410) {
+                    Qmsg.error("更新用户信息失败");
+                }
+            })
+    }
+
+    function updateEmail() {
+
+            axios({
+                url: `/user/update_email`,
+                method: "post",
+                data: {
+                    content: email.value,
+                }
+            }).then(res=>{
+                if (res.data.code === 200) {
+                    Qmsg.success(res.data.msg);
+                }
+                if (res.data.code === 410) {
+                    Qmsg.error(res.data.msg);
+                }
+            })
+    }
+
+    function updatePassword() {
+
+            axios({
+                url: `/user/update_pwd`,
+                method: "post",
+                data: {
+                    old_pwd: old_pwd.value,
+                    new_pwd: new_pwd.value
+                }
+            }).then(res=>{
+                if (res.data.code === 200) {
+                    Qmsg.success(res.data.msg);
+                }
+                if (res.data.code === 410) {
+                    Qmsg.error(res.data.msg);
+                }
+            })
+    }
+
+
+
+</script>
+{% endblock code %}

@@ -1,0 +1,58 @@
+<!-- 编辑信息弹窗 -->
+<div class="mdui-dialog" id="edit-info">
+  <div class="mdui-dialog-title">编辑资料</div>
+  <div class="mdui-dialog-content">
+    <div style="margin-bottom: 20px;">
+      <span class="mdui-typo-subheading">头像</span>
+      <div>
+        <input type="file" id="upload-avatar" name="image"
+               data-max-file-size="{{ file.max_size }}" data-max-parallel="{{ file.parallel }}" data-max-files="1">
+      </div>
+    </div>
+    <div style="margin-bottom: 20px;">
+      <span class="mdui-typo-subheading">背景</span>
+      <div>
+        <input type="file" id="upload-cover" name="image"
+               data-max-file-size="{{ file.max_size }}" data-max-parallel="{{ file.parallel }}" data-max-files="1">
+      </div>
+    </div>
+    <div style="margin-bottom: 20px;">
+      <span class="mdui-typo-subheading">重要信息</span>
+      <div class="mdui-textfield">
+        <label class="mdui-textfield-label">邮箱</label>
+        <input class="mdui-textfield-input" name="email" type="email"/>
+      </div>
+      <div class="mdui-clearfix">
+        <button
+                id="user-email-save"
+                class="mdui-btn mdui-btn-dense mdui-color-theme-100 mdui-ripple mdui-float-right">提交
+        </button>
+      </div>
+    </div>
+    <div style="margin-bottom: 20px;">
+      <span class="mdui-typo-subheading">基本信息</span>
+      <div class="mdui-textfield">
+        <label class="mdui-textfield-label">昵称</label>
+        <input class="mdui-textfield-input" name="nickname" type="text" maxlength="20"/>
+      </div>
+      <div class="mdui-textfield">
+        <label class="mdui-textfield-label">个性签名</label>
+        <textarea class="mdui-textfield-input" name="signature" maxlength="200"></textarea>
+      </div>
+      <div class="mdui-textfield">
+        <label class="mdui-textfield-label">社交平台</label>
+        <textarea class="mdui-textfield-input" name="social"></textarea>
+      </div>
+      <div class="mdui-clearfix">
+        <button
+                id="user-info-save"
+                class="mdui-btn mdui-btn-dense mdui-color-theme-100 mdui-ripple mdui-float-right">提交
+        </button>
+      </div>
+    </div>
+
+  </div>
+  <div class="mdui-dialog-actions">
+    <button class="mdui-btn mdui-ripple" id="user-info-cancel">关闭</button>
+  </div>
+</div>

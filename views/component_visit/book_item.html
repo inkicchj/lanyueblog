@@ -1,0 +1,39 @@
+{% macro init(data) %}
+<div class="article-item">
+
+
+<div class="mdui-card mdui-shadow-1 mdui-p-a-2" style="border-radius: 10px;overflow: visible;position: relative;">
+    <div style="display: flex;">
+        <div style="flex: 1.5;">
+            <img src="{{ data.cover }}" style="width: 100%;height: 100%;object-fit: cover;">
+        </div>
+        <div style="flex: 2;margin-left: 10px;display: flex;flex-direction: column;justify-content: space-between;">
+            <div style="margin-bottom: 10px;">
+                <div class="mdui-p-a-1">
+                    <a href="/detail/{{ data.alias | default(value=data.id) }}" style="text-decoration: none" target="_blank" class="mdui-typo-title item-title mdui-text-color-theme-text">{{ data.title }}</a>
+                </div>
+                <div class="mdui-p-a-1">
+                    <span class="mdui-typo-body-2-opacity"><span style="font-weight: bold">作者:</span> {{ book_info(data=data.description) | first | truncate(length=20) }}</span>
+                </div>
+                <div class="mdui-p-a-1">
+                    <span class="mdui-typo-body-2-opacity"><span style="font-weight: bold">简介:</span> {{ book_info(data=data.description) | last | truncate(length=40) }}</span>
+                </div>
+            </div>
+            <div style="display: flex;">
+                <a class="mdui-chip mdui-color-theme-50" href="/author/{{ data.user_id }}">
+                    <img style="object-fit: cover;" class="mdui-chip-icon" src="/{{ data.user_avatar | default(value="assets/images/user.png") | safe }}?date={{ now() }}"/>
+                    <span class="mdui-chip-title">{{ data.user_nickname }}</span>
+                </a>
+                <div class="mdui-chip mdui-color-theme-50" style="margin-left: 10px;">
+                    <a class="mdui-chip-title mdui-text-color-theme-text" href="/category/{{ data.category_alias | default(value=data.category_id) }}" style="text-decoration: none;">{{ data.category_name }}</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+</div>
+
+</div>
+{% endmacro init %}

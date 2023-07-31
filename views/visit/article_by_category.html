@@ -1,0 +1,244 @@
+{% extends "base.html" %}
+{% import "component_visit/blog_item.html" as blog %}
+{% import "component_visit/book_item.html" as book %}
+{% import "component_visit/activity_item.html" as activity %}
+{% import "component_visit/link_item.html" as link %}
+{% import "component_visit/pagination.html" as page %}
+
+
+{% block title %}{{ category.name }}-{{ web.name }}{% endblock title %}
+
+{% block head %}
+{{ super() }}
+<link rel="stylesheet" href="/assets/css/hover-min.css">
+<link  href="/assets/preview/photoviewer.min.css" rel="stylesheet">
+<script src="/assets/preview/photoviewer.min.js"></script>
+<style>
+    .image-main {
+        display: flex;
+        justify-content: start;
+        flex-wrap: wrap;
+    }
+    .image-bar {
+        width: 32%;
+        border-radius: 6px;
+        overflow: hidden;
+        margin: 0.5%;
+        padding-top: 32%;
+        position: relative;
+    }
+
+    .image-bar img{
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        position: absolute;
+        top: 0;
+        left: 0;
+    }
+    .image-more {
+        position: absolute;
+        top: 0;
+        left: 0;
+        z-index: 5;
+        width: 100%;
+        height: 100%;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: rgba(0,0,0,.3);
+    }
+    .image-more span {
+        font-size: 22px;
+        color: white;
+    }
+    .image-more:hover span {
+        font-size: 25px;
+        cursor: default;
+    }
+    #pagination a {
+        width: 40px;
+        height: 40px;
+        margin: 3px;
+        border-radius: 3px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        text-decoration: none;
+    }
+    #pagination a:hover {
+        background-color: #5C6BC0 !important;
+        color: white !important;
+    }
+    #pagination .page-active {
+        background-color: #5C6BC0 !important;
+        color: white !important;
+    }
+    .no-select-name {
+        position: relative;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    .select-name {
+        position: relative;
+        padding-left: 5px;
+        padding-right: 5px;
+    }
+    .select-name span {
+        color: black;
+    }
+    .select-name span:before {
+        content: '';
+        left: 1px;
+        right: 1px;
+        height: 22%;
+        background-color: red;
+        position: absolute;
+        opacity: .33;
+        bottom: 0;
+        -webkit-transform: translate(0%, -50%);
+        -ms-transform: translate(0%, -50%);
+        transform: translate(0%, -50%);
+    }
+
+</style>
+{% endblock head %}
+
+{% block nav %}
+{% include "component_visit/nav.html" %}
+{% endblock nav %}
+
+{% block main %}
+<!-- 正文内容 -->
+<div style="height: 72px;">
+</div>
+<div class="mdui-container mdui-p-a-3">
+    <div class="mdui-row">
+        <div style="display: flex;justify-content: start;align-items: center">
+
+                <h1 class="select-name">
+                <span class="mdui-typo-title">
+                    {{ category.name }}
+                </span>
+                </h1>
+
+        </div>
+    </div>
+</div>
+<div class="mdui-container" id="container">
+    <div id="article-bar">
+        {% if articles.data %}
+            {% for content in articles.data %}
+                {% if content.type == "Blog" %}
+                    {{ blog::init(data=content) }}
+                {% elif content.type == "Activity" %}
+                    {{ activity::init(data=content) }}
+                {% elif content.type == "Book" %}
+                    {{ book::init(data=content) }}
+                {% elif content.type == "Link" %}
+                    {{ link::init(data=content) }}
+                {% endif %}
+            {% endfor %}
+        {% endif %}
+    </div>
+    <div id="pagination" class="mdui-p-a-2" style="height: 100px;display: flex;align-items: center;">
+        {{ page::init(pagination=articles) }}
+    </div>
+</div>
+{% endblock main %}
+
+{% block code %}
+<script type="text/javascript">
+
+    function waterFall() {
+        let screen = document.getElementById("container").clientWidth;
+
+        let main = document.getElementById("article-bar");
+        main.style.position = "relative";
+
+        let items = document.getElementsByClassName("article-item");
+        let column;
+        console.log(screen);
+        if (screen>1024) {
+            column = 3;
+        } else if (screen>600&&screen<=1024){
+            column = 2;
+            console.log("screen为中等");
+        } else {
+            console.log("screen小于");
+            column = 1;
+        }
+
+        for (let item of items) {
+            item.style.float = "left";
+            item.style.padding = "10px";
+            item.style.width = `${Math.floor(screen/column)-40}px`;
+        }
+
+        let heights = [];
+        let minHeight = 0;
+        let minIndex = 0;
+        for (let i=0;i<column;i++) {
+            heights.push(items[i].offsetHeight);
+        }
+        console.log(heights);
+
+        for (let i=column;i<items.length;i++) {
+            items[i].style.position = "absolute";
+            for (let j=0;j<heights.length;j++) {
+                if (heights[minIndex]>heights[j]) {
+                    minIndex = j;
+                }
+            }
+            minHeight = heights[minIndex];
+            items[i].style.left = `${minIndex*items[i].offsetWidth}px`;
+
+            items[i].style.top = `${minHeight}px`;
+            heights[minIndex] += items[i].offsetHeight;
+            console.log(heights);
+        }
+
+        let maxHeight = 0;
+        for (let i of heights) {
+            if (maxHeight < i) {
+                maxHeight = i;
+            }
+        }
+
+        main.style.height = `${maxHeight}px`;
+    }
+    waterFall();
+    window.onload = () => {
+        waterFall();
+    }
+
+    window.onresize = () => {
+        waterFall();
+    }
+
+    function onViewer(id, index) {
+        let images = document.querySelectorAll(`#image-main-${id} img`);
+        let items = [];
+        for (let img of images) {
+            items.push({
+                src: img.dataset.preview,
+            })
+        }
+        new PhotoViewer(items, {
+            index: index,
+            initMaximized: true,
+            callbacks: {
+                opened: function(context){
+                    let main = document.getElementsByClassName("photoviewer-modal")[0];
+                    main.style.background = "rgba(0,0,0,.9)";
+                    main.style.color = "white";
+                    let stage = document.getElementsByClassName("photoviewer-stage")[0];
+                    stage.style.background = "rgba(0,0,0,.9)";
+
+                },
+            }
+        });
+    }
+
+</script>
+{% endblock code %}

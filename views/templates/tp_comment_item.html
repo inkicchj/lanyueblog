@@ -1,0 +1,62 @@
+{% raw %}
+<script id="tp-comment-item" type="text/html">
+  {{each data.data comment key}}
+  <div class="mdui-p-a-2" >
+    <div style="display: flex;flex-wrap: nowrap;margin-bottom: 20px;" id="comment-{{comment.id}}">
+      <div>
+        <label class="mdui-checkbox">
+          <input type="checkbox" value="{{comment.id}}" name="comment-id" onchange="selectId(event)"/>
+          <i class="mdui-checkbox-icon"></i>
+        </label>
+      </div>
+      <div>
+        <div style="display: flex;justify-content: center;">
+          {{ if comment.avatar }}
+          <img class="mdui-img-circle"
+               src="/{{comment.avatar}}"
+               style="object-fit: cover;width: 50px;height: 50px;"/>
+          {{ else }}
+          <span class="mdui-chip-icon mdui-color-theme-100" style="width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
+            {{ comment.nickname[0] }}</span>
+          {{/if}}
+        </div>
+      </div>
+      <div style="width: 100%;margin-left: 10px;">
+        <div class="mdui-float-right">
+          <a href="/detail/{{comment.article_id}}/#comment-{{comment.id}}"
+             target="_blank"
+             class="mdui-btn mdui-ripple mdui-color-indigo-50">查看</a>
+        </div>
+        <div class="nickname">
+          <span class="mdui-typo-body-2" style="font-weight: bold;">{{comment.nickname}}</span>
+          <span class="mdui-typo-body-2 mdui-text-color-indigo-700" style="font-weight: bold;margin-left: 10px;">
+            评论文章: {{comment.article_title}}</span>
+        </div>
+        <div class="mdui-m-t-2">
+          <span class="mdui-typo-body-1 mdui-p-a-1 mdui-color-indigo-50"
+                                          style="border-radius: 5px;">{{comment.content}}</span>
+        </div>
+        <div class="mdui-m-t-2">
+          <span class="mdui-typo-body-2-opacity mdui-text-color-grey-600">Time: {{moment(comment.created)}}</span>
+        </div>
+        <div class="mdui-m-t-2">
+          <span class="mdui-typo-body-2-opacity mdui-text-color-grey-600">Email: {{comment.email}}</span>
+        </div>
+        <div class="mdui-m-t-2">
+          <span class="mdui-typo-body-2-opacity mdui-text-color-grey-600">Link:
+            {{comment.link}}</span>
+        </div>
+        <div class="mdui-m-t-2">
+          <span class="mdui-typo-body-2-opacity mdui-text-color-grey-600">IP: {{comment.ip}}</span>
+        </div>
+        <div class="mdui-m-t-2">
+          <span class="mdui-typo-body-2-opacity mdui-text-color-grey-600">Agent: {{comment.agent}}</span>
+        </div>
+      </div>
+
+    </div>
+    <div class="mdui-divider"></div>
+  </div>
+  {{/each}}
+</script>
+{% endraw %}

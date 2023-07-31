@@ -1,155 +1,244 @@
-{% extends "base_c.html" %}
-{% import "component/pagination.html" as page %}
-
-{% block title %}{{ web.name }}{% endblock title %}
+{% extends "base_manage.html" %}
 
 {% block head %}
 {{ super() }}
-<link href="/static/css/viewer.min.css" rel="stylesheet" />
-<script src="/static/js/viewer.min.js"></script>
-<script src="/static/js/arttemplate.js"></script>
-<script src="/static/js/moment-with-locales.js"></script>
-<style>
-    .thbody td {
-        vertical-align: middle !important;
-    }
-</style>
+<script type="text/javascript" src="/assets/js/arttemplate.js"></script>
+<script type="text/javascript" src="/assets/js/moment-with-locales.js"></script>
+<link rel="stylesheet" href="/assets/css/pagination.css">
+<script type="text/javascript" src="/assets/js/pagination.js"></script>
+<script src="/assets/js/md5.min.js"></script>
+<link rel="stylesheet" href="/assets/css/upload.css" />
 {% endblock head %}
 
-{% block nav %}
-{% include "component/nav_c.html" %}
-{% endblock nav %}
+{% block sidebar %}
+{% include "component_manage/sidebar.html" %}
+{% endblock sidebar %}
 
-{% block name %}
-用户管理
-{% endblock name %}
+{% block main %}
+<div class="mdui-container" style="margin-top: 50px;">
+    <div class="mdui-row">
+        <div style="margin-bottom: 20px;">
+            <div class="mdui-clearfix">
+                <div class="mdui-float-left">
+                    <div class="mdui-btn-group" style="margin-bottom: 20px;">
+                        <button type="button" class="mdui-btn mdui-btn-active" id="active">
+                            <a>正常</a>
+                        </button>
+                        <button type="button" class="mdui-btn" id="ban">
+                            <a>封禁</a>
+                        </button>
+                    </div>
+                </div>
+                <div class="mdui-float-right" style="display: flex;">
 
-{% block full %}
-<div class="card" style="margin-top: 25px;">
-    <div class="card-content">
-<div style="width: 100%;padding: 15px;">
-    <div class="field is-grouped">
-        <p class="control is-expanded">
-            <input class="input" type="text" placeholder="邮箱" value="" id="email">
-        </p>
-        <p class="control is-expanded">
-            <input class="input" type="text" placeholder="昵称" value="" id="username">
-        </p>
-        <p class="control">
-            <a class="button is-info" onclick="getUserList()">
-                过滤
-            </a>
-        </p>
+                    <input class="mdui-textfield-input" type="text" placeholder="邮箱"
+                           id="user-filter-email"
+                           style="margin-right: 10px;"/>
+                    <input class="mdui-textfield-input" type="text" placeholder="昵称"
+                           id="user-filter-nickname"
+                           style="margin-right: 10px;"/>
+                    <button class="mdui-btn mdui-ripple mdui-color-indigo-100" id="user-filter">过滤</button>
+
+                </div>
+            </div>
+        </div>
+        <div class="mdui-container-fluid" style="margin-bottom: 20px;">
+            <div class="mdui-row" id="data-container">
+
+
+            </div>
+        </div>
+        <!-- 分页 -->
+        <div class="mdui-row mdui-p-a-1" id="pagination" style="margin-bottom: 100px;">
+
+        </div>
+        <!--资料编辑-->
+        {% include "component_manage/edit_info.html" %}
     </div>
-
-
-
-    <table class="table" style="width: 100%;border-radius: 7px;">
-        <thead>
-            <tr>
-                <th>头像</th>
-                <th>昵称</th>
-                <th>邮箱</th>
-                <th>注册时间</th>
-                <th>最近登录</th>
-                <th>角色</th>
-                <th>状态</th>
-                <th>操作</th>
-            </tr>
-        </thead>
-        <tbody id="users">
-
-        </tbody>
-    </table>
-    {{ page::page(total=total, size=30, url=url, pref='/manage/user') }}
 </div>
-</div>
-</div>
-{% endblock full %}
 
+{% endblock main %}
 
-{% block script %}
-{% include "template/user_item.html" %}
-{% include "component/modal.html" %}
+{% block code %}
+{% include "templates/tp_user_item.html" %}
+<script type="text/javascript" src="/assets/js/upload.js"></script>
 <script type="text/javascript">
+    let editWin = new mdui.Dialog("#edit-info");
 
-    function userEdit(id, avatar, background, username, signature) {
-        let data = {
-            id: id,
-            avatar: avatar,
-            background: background,
-            username: username,
-            signature: signature
-        };
-        let html = template('tpl-user-edit', data);
-        let elem = document.getElementById("modal");
-        elem.innerHTML = html;
+    let list = new Pagination("pagination", {
+        page: 1,
+        itemNum: 5,
+        url: "/user/list",
+        param: {
+            email: null,
+            nickname: null,
+            status: 'Active',
+        },
+        onSuccess: function (res) {
+            console.log(res);
+            if (res.data.code === 200) {
+                template.defaults.imports.moment = function (timestamp) {
+                    moment.locale("zh-cn");
+                    return moment.unix(timestamp).fromNow();
+                }
+                template.defaults.imports.now = function () {
+                    return Date.now()
+                }
+                document.getElementById("data-container").innerHTML = template("tp-user-item", res.data);
+            } else {
+                Qmsg.error(res.data.msg)
+            }
+        }
+    })
+    list.init();
+
+    document.getElementById("active").addEventListener("click", (e)=>{
+        document.getElementById("active").classList.add("mdui-btn-active");
+        document.getElementById("ban").classList.remove("mdui-btn-active");
+        list.param.status = "Active";
+        list.pagination.page = 1;
+        list.init();
+    })
+    document.getElementById("ban").addEventListener("click", (e)=>{
+        document.getElementById("ban").classList.add("mdui-btn-active");
+        document.getElementById("active").classList.remove("mdui-btn-active");
+        list.param.status = "Ban";
+        list.pagination.page = 1;
+        list.init();
+    })
+
+    document.getElementById("user-filter").addEventListener("click", function (e){
+        list.param.nickname = document.getElementById("user-filter-nickname").value;
+        list.param.email = document.getElementById("user-filter-email").value;
+        list.init();
+    })
+
+    function updateInfo(uid) {
+        document.getElementById("user-info-save").addEventListener("click", function (e){
+            axios({
+                url: `/user/update_info?uid=${uid}`,
+                method: "post",
+                data: {
+                    nickname: nickname.value,
+                    signature: signature.value,
+                    social: social.value,
+                }
+            }).then(res=>{
+                if (res.data.code === 200) {
+                    Qmsg.success("更新用户信息成功");
+                }
+                if (res.data.code === 410) {
+                    Qmsg.error("更新用户信息失败");
+                }
+            })
+        })
     }
 
-    function getUserList() {
-        query = window.location.search.substring(1);
-        var vars = query.split("&");
-        let page;
-        for (var i = 0; i < vars.length; i++) {
-            var pair = vars[i].split("=");
-            page = pair;
+    function updateEmail(uid) {
+        document.getElementById("user-email-save").addEventListener("click", function (e){
+            axios({
+                url: `/user/update_email?uid=${uid}`,
+                method: "post",
+                data: {
+                    content: email.value,
+                }
+            }).then(res=>{
+                if (res.data.code === 200) {
+                    Qmsg.success(res.data.msg);
+                }
+                if (res.data.code === 410) {
+                    Qmsg.error(res.data.msg);
+                }
+            })
+        })
+    }
+
+    let email = document.getElementsByName("email")[0];
+    let nickname = document.getElementsByName("nickname")[0];
+    let signature = document.getElementsByName("signature")[0];
+    let social = document.getElementsByName("social")[0];
+
+
+    let uploadAvatar = new FileUpload("upload-avatar", {
+        upload: {
+            url: `/user/update_avatar`,
+            method: "post"
         }
-        if (page.length == 1) {
-            page = ["page", "1"]
+    })
+    uploadAvatar.start();
+
+    let uploadCover = new FileUpload("upload-cover", {
+        upload: {
+            url: `/user/update_cover`,
+            method: "post"
         }
-        let email = document.getElementById('email').value;
-        let username = document.getElementById('username').value;
+    })
+    uploadCover.start();
+
+
+    function EditTo(uid) {
         axios({
-            method: 'post',
-            url: '/user/list',
+            url: `/user/detail/${uid}`,
+            method: "post"
+        }).then(res => {
+            if (res.data.code === 200) {
+                console.log(res.data)
+                let data = res.data.data;
+                email.value = data.email;
+                nickname.value = data.nickname;
+                signature.value = data.signature;
+                social.value = data.social;
+                editWin.open();
+                uploadAvatar.upload.url = `/user/update_avatar?uid=${uid}`;
+                uploadCover.upload.url = `/user/update_cover?uid=${uid}`;
+                updateInfo(uid);
+                updateEmail(uid);
+                document.getElementById("user-info-cancel").addEventListener("click", function (e){
+                    nickname.value = null;
+                    signature.value = null;
+                    social.value = null;
+                    editWin.close();
+                })
+            } else {
+                Qmsg.error(res.data.msg);
+            }
+        })
+
+    }
+
+    function onChangeStatus(uid, status) {
+        axios({
+            url: `/user/set_status/${uid}`,
+            method: "post",
             data: {
-                page: parseInt(page[1]),
-                email: email,
-                username: username
+                content: status
             }
         }).then(res => {
-            if (res.data.code == 200) {
-                template.defaults.imports.moment = function (date) {
-                    moment.locale("zh-cn");
-                    let d = moment(date * 1000).format("YYYY-MM-DD hh:mm:SS");
-                    return d;
-                };
-                template.defaults.imports.parse_role = function (role) {
-                    if (role == "superadmin") return "超级管理员";
-                    if (role == "admin") return "管理员";
-                    if (role == "general") return "普通用户";
-                };
-                template.defaults.imports.parse_status = function (status) {
-                    if (status == 1) return "活动";
-                    if (status == 2) return "限制";
-                    if (status == 0) return "封禁";
-                };
-                let html = template('tpl-user-list', res.data);
-
-                let b = document.getElementById('users');
-                b.innerHTML = html;
+            if (res.data.code === 200) {
+                Qmsg.success(res.data.msg);
             } else {
-                Qmsg.warning(res.data.msg, {
-                    timeout: 3000
-                });
+                Qmsg.error(res.data.msg);
             }
         })
     }
 
-    (function () {
-        getUserList();
-    })()
 
-    function look(elem) {
-        const viewer = new Viewer(document.getElementById(elem.id), {
-            inline: false,
-            toolbar: false,
-            navbar: false,
-            hide: function () {
-                viewer.destroy();
-            }
-        });
-        viewer.show();
-    }
+
+    // function onDelete() {
+    //     axios.all(selects.map(id => {
+    //         axios({
+    //             url: `/file/delete/${id}`,
+    //             method: "post",
+    //         }).then(res => {
+    //             if (res.data.code === 200) {
+    //                 Qmsg.success(`删除${id}成功`);
+    //             } else {
+    //                 Qmsg.error(`删除${id}失败`);
+    //             }
+    //         })
+    //     })).then(axios.spread((acc, prem)=>{
+    //         selects = [];
+    //     }))
+    // }
 </script>
-{% endblock script %}
+{% endblock code %}

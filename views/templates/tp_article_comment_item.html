@@ -1,0 +1,40 @@
+{% raw %}
+<script id="tp-article-comment-item" type="text/html">
+    <div style="display: flex;flex-wrap: nowrap;margin-bottom: 20px;" id="comment-{{data.id}}">
+        <div>
+            <div style="display: flex;justify-content: center;">
+                {{ if data.avatar }}
+                <img class="mdui-img-circle"
+                     src="/{{data.avatar}}"
+                     style="object-fit: cover;width: 50px;height: 50px;"/>
+                {{ else }}
+                <span class="mdui-chip-icon mdui-color-theme-100"
+                      style="width: 50px;height: 50px;display: flex;justify-content: center;align-items: center;">
+                                    {{ data.nickname[0] }}</span>
+                {{ /if }}
+            </div>
+        </div>
+        <div style="width: 100%;margin-left: 10px;">
+            <div class="nickname">
+                <span class="mdui-typo-body-2" style="font-weight: bold;">{{data.nickname}}</span>
+                <span class="mdui-typo-body-2">
+                                    {{ if data.from_user_id }}
+                                        {{ if data.from_user_id }}
+                                            [作者]
+                                        {{ /if }}
+                                    {{ /if }}
+                                </span>
+            </div>
+            <div class="mdui-m-t-2">
+                                    <span class="mdui-typo-body-1 mdui-p-a-1 mdui-color-theme-100"
+                                          style="border-radius: 5px;">{{ data.content }}</span>
+            </div>
+            <div class="mdui-m-t-2" style="margin-bottom: 20px;">
+                <span class="mdui-typo-caption mdui-text-color-grey-600">{{ moment(time=data.created) }}</span>
+                <span class="mdui-typo-caption reply-btn"
+                      onclick="ReplyTo({{data.parent_id}},{{data.id}},{{ data.from_user_id?data.from_user_id:null }})">回复</span>
+            </div>
+        </div>
+    </div>
+</script>
+{% endraw %}
